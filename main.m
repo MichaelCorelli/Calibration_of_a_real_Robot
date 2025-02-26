@@ -1,8 +1,9 @@
+
 close all
 clear
 clc
 
-source "calibration.m"
+source "calibration/calibration.m"
 
 h = figure(1);
 more off;
@@ -26,3 +27,9 @@ model_pose = [Z{4}, Z{5}, Z{6}];
 tracker_pose = [Z{7}, Z{8}, Z{9}];
 
 disp('Dataset loaded');
+
+%2D position of the sensor w.r.t. the base link
+pos_sensor = position_sensor(model_pose, tracker_pose, axis_length);
+
+disp("2D position of the sensor w.r.t. the base link:");
+disp(pos_sensor);
