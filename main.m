@@ -5,6 +5,14 @@ clc
 
 source "calibration/calibration.m"
 
+#to observer the robot and sensor trajectories moving set: on
+args = argv();
+if length(args) > 0 && args{1} == 'on'
+    moving = true;
+else
+    moving = false;
+end
+
 h = figure(1);
 more off;
 
@@ -29,7 +37,15 @@ tracker_pose = [Z{7}, Z{8}, Z{9}];
 disp('Dataset loaded');
 
 %2D position of the sensor w.r.t. the base link
-pos_sensor = position_sensor(model_pose, tracker_pose, axis_length);
+pose_sensor = position_sensor(model_pose, tracker_pose);
 
 disp("2D position of the sensor w.r.t. the base link:");
-disp(pos_sensor);
+disp(pose_sensor);
+
+#2D trajectory of the sensor w.r.t. the base link
+disp('2D trajectory of the sensor w.r.t. the base link');
+plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h);
+
+#2D error trajectory of the sensor w.r.t. the base link
+disp('2D error trajectory of the sensor w.r.t. the base link');
+plot_sensor_error(pose_sensor, tracker_pose, moving, h);

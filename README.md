@@ -14,5 +14,14 @@ The dataset.txt contains the data that come from the sensor of a real robot:
 - 2D position of the sensor w.r.t the mobile platform.
 - The kinematic parameters: Ksteer, Ktraction, SteerOffset and Baseline.
 
+### How run the code
+```shell
+octave main.m
+```
+to observer the robot and sensor trajectories moving set:
+```shell
+octave main.m on
+```
+
 #### Reference
 - https://gitlab.com/grisetti/probabilistic_robotics_2024_25
