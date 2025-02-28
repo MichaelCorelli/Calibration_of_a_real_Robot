@@ -52,7 +52,7 @@ plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
 
 #The kinematic parameters: Ksteer, Ktraction, SteerOffset and Baseline.
 disp('Calibration of: Ksteer, Ktraction, SteerOffset and Baseline');
-X = [Ksteer, Ktraction];
-Z = ticks;
+X = [Ksteer, Ktraction, axis_length, steer_offset];
+Z = [ticks(:, 1:2), model_pose(:, 3), tracker_pose(:, 3)];
 X_calibrated = parameters_calibration(X, Z);
 disp(X_calibrated);

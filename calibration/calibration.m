@@ -127,12 +127,14 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
 endfunction
 
 function X_calibrated = parameters_calibration(X, Z)
-	H=zeros(2, 2);
-	b=zeros(2, 1);
+	H = zeros(2, 2);
+	b = zeros(2, 1);
+
+  ticks = Z(:, 1:2);
 	
 	for i=1:size(Z,1)
 		error = error_estimate(i, X, Z);
-		J = jacobian(i,Z);
+		J = jacobian(i, ticks);
 		H = H + J'*J;
 		b = b + J'*error;
 	end
@@ -142,11 +144,13 @@ function X_calibrated = parameters_calibration(X, Z)
 end
 
 function error = error_estimate(i, X, Z)
-	ustar = Z(i, :)';
+	ustar = Z(i, 3)';
+  u = Z(i, 2)';
 	error = ustar - X*ustar;
 end
 
 function J = jacobian(i,Z)
-	J = zeros(2, 2);
-  J(1, :) = Z(i, :);
+  u = Z(i, 1:2);
+	J = zeros(1, 2);
+  J(1, 1:2) = -u;
 end
