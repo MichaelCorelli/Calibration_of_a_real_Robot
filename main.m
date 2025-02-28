@@ -44,8 +44,8 @@ disp(pose_sensor);
 
 #2D trajectory of the sensor w.r.t. the base link
 disp('2D trajectory of the sensor w.r.t. the base link');
-plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h);
+plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h, time);
 
 #2D error trajectory of the sensor w.r.t. the base link
 disp('2D error trajectory of the sensor w.r.t. the base link');
-plot_sensor_error(pose_sensor, tracker_pose, moving, h);
+plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
