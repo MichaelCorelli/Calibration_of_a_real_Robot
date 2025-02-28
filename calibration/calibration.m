@@ -103,8 +103,8 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
         set(line1, 'XData', pose_sensor(1:i, 1), 'YData', pose_sensor(1:i, 2));
         set(line2, 'XData', tracker_pose(1:i, 1), 'YData', tracker_pose(1:i, 2));
         set(line3, 'XData', error_sensor(1:i, 1), 'YData', error_sensor(1:i, 2));
-      
-        disp(error_sensor(i, :));
+
+        printf('The sensor error at time %f is %f on x and %f on y\n', time(i, 1), error_sensor(i, 1), error_sensor(i, 2));
         pause(delta_time(i));
         drawnow;
       else
@@ -117,10 +117,36 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
     plot(error_sensor(:, 1), error_sensor(:, 2), 'g-', 'linewidth', 2);
 
-    disp(error_sensor);
     legend('Sensor', 'Tracker', 'Sensor error trajectory');
     drawnow;
   end
-    
+
+
+  printf('The sensor error mean is %f on x and %f on y\n', mean(error_sensor(:, 1)), mean(error_sensor(:, 2)));
   waitfor(h);
 endfunction
+
+function X_calibrated = parameters_calibration(X, Z)
+	H=zeros(2, 2);
+	b=zeros(2, 1);
+	
+	for i=1:size(Z,1)
+		error = error_estimate(i, X, Z);
+		J = jacobian(i,Z);
+		H = H + J'*J;
+		b = b + J'*error;
+	end
+
+	delta_X = -H\b;
+	X_calibrated = X + delta_X;
+end
+
+function error = error_estimate(i, X, Z)
+	ustar = Z(i, :)';
+	error = ustar - X*ustar;
+end
+
+function J = jacobian(i,Z)
+	J = zeros(2, 2);
+  J(1, :) = Z(i, :);
+end

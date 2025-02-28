@@ -49,3 +49,10 @@ plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h, time);
 #2D error trajectory of the sensor w.r.t. the base link
 disp('2D error trajectory of the sensor w.r.t. the base link');
 plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
+
+#The kinematic parameters: Ksteer, Ktraction, SteerOffset and Baseline.
+disp('Calibration of: Ksteer, Ktraction, SteerOffset and Baseline');
+X = [Ksteer, Ktraction];
+Z = ticks;
+X_calibrated = parameters_calibration(X, Z);
+disp(X_calibrated);
