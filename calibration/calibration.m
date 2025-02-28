@@ -126,31 +126,86 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
   waitfor(h);
 endfunction
 
-function X_calibrated = parameters_calibration(X, Z)
-	H = zeros(2, 2);
-	b = zeros(2, 1);
-
-  ticks = Z(:, 1:2);
+function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time)
+	H = zeros(4, 4);
+	b = zeros(4, 1);
+  delta_time = diff(time);
+  delta_time = [delta_time; delta_time(end)];
 	
-	for i=1:size(Z,1)
-		error = error_estimate(i, X, Z);
-		J = jacobian(i, ticks);
+	for i = 1:size(Z_ticks_pose,1)
+		error = Ksteer_Ktraction_error_estimate(i, Ksteer_Ktraction, Z_ticks_pose, delta_time);
+		J = jacobian(i, Z_ticks_pose);
 		H = H + J'*J;
 		b = b + J'*error;
 	end
 
-	delta_X = -H\b;
-	X_calibrated = X + delta_X;
-end
+	delta_Ksteer_Ktraction = -H\b;
+	ksteeer_ktraction_calibrated = Ksteer_Ktraction + delta_Ksteer_Ktraction;
+endfunction
 
-function error = error_estimate(i, X, Z)
-	ustar = Z(i, 3)';
-  u = Z(i, 2)';
-	error = ustar - X*u;
-end
+function error = Ksteer_Ktraction_error_estimate(i, Ksteer_Ktraction, Z_ticks_pose, delta_time)
+	error = [Ksteer_error(i, Ksteer_Ktraction(1), Z_ticks_pose); Ktraction_error(i, Ksteer_Ktraction(2), Z_ticks_pose, delta_time)];
+endfunction
 
-function J = jacobian(i,Z)
+function Ksteer_error = Ksteer_error(i, Ksteer_Ktraction, Z_ticks_pose)
+  Ksteer_ticks = Z_ticks_pose(i, 1);
+  model_theta = Z_ticks_pose(i, 5);
+  tracker_theta = Z_ticks_pose(i, 8);
+  diff_theta = tracker_theta - model_theta;
+  Ksteer_error = Ksteer_ticks - Ksteer_Ktraction*diff_theta;
+endfunction
+
+function Ktraction_error = Ktraction_error(i, Ksteer_Ktraction, Z_ticks_pose, delta_time)
+  Ktraction_ticks = Z_ticks_pose(i, 2);
+  model_pose = Z_ticks_pose(i, 3:4);
+  tracker_pose = Z_ticks_pose(i, 6:7);
+  diff_pose = sqrt((tracker_pose(1) - model_pose(1))^2 + (tracker_pose(2) - model_pose(2))^2);
+  
+  meters = diff_pose/delta_time(i);
+  Ktraction_error = Ktraction_ticks - Ksteer_Ktraction*meters;
+endfunction
+
+function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose)
+	H = zeros(4, 4);
+	b = zeros(4, 1);
+	
+	for i = 1:size(Z_pose, 1)
+		error = axis_length_steer_offset_error_estimate(i, axis_length_steer_offset, Z_pose);
+		J = jacobian(i, Z_pose);
+		H = H + J'*J;
+		b = b + J'*error;
+	end
+
+	delta_axis_length_steer_offset = -H\b;
+	axis_length_steer_offset_calibrated = axis_length_steer_offset + delta_axis_length_steer_offset;
+endfunction
+
+function error = axis_length_steer_offset_error_estimate(i, axis_length_steer_offset, Z_pose)
+  error = [axis_length_error(i, axis_length_steer_offset(1), Z_pose); steer_offset_error(i, axis_length_steer_offset(2), Z_pose)];
+endfunction
+
+function axis_length_error = axis_length_error(i, axis_length_steer_offset, Z_pose)
+  sensor_pose = Z_pose(i, 1:2);
+  model_pose = Z_pose(i, 4:5);
+  tracker_pose = Z_pose(i, 7:8);
+  diff_pose_sensor = sqrt((sensor_pose(1) - model_pose(1))^2 + (sensor_pose(2) - model_pose(2))^2);
+  diff_pose = sqrt((tracker_pose(1) - model_pose(1))^2 + (tracker_pose(2) - model_pose(2))^2);
+  
+  axis_length_error = diff_pose_sensor - axis_length_steer_offset*diff_pose;
+endfunction
+
+function steer_offset_error = steer_offset_error(i, axis_length_steer_offset, Z_pose)
+  theta_sensor = Z_pose(i, 3);
+  model_theta = Z_pose(i, 6);
+  tracker_theta = Z_pose(i, 9);
+  diff_theta_sensor = theta_sensor - model_theta;
+  diff_theta = tracker_theta - model_theta;
+  steer_offset_error = diff_theta_sensor - axis_length_steer_offset*diff_theta;
+endfunction
+
+function J = jacobian(i, Z)
   u = Z(i, 1:2);
-	J = zeros(1, 2);
-  J(1, 1:2) = -u;
-end
+	J = zeros(2, 4);
+  J(1, 1:2)= -u;
+	J(2, 3:4)= -u;
+endfunction
