@@ -146,7 +146,7 @@ end
 function error = error_estimate(i, X, Z)
 	ustar = Z(i, 3)';
   u = Z(i, 2)';
-	error = ustar - X*ustar;
+	error = ustar - X*u;
 end
 
 function J = jacobian(i,Z)
