@@ -67,9 +67,10 @@ function plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h
     plot(pose_sensor(:, 1), pose_sensor(:, 2), 'r-', 'linewidth', 2);
     plot(model_pose(:, 1), model_pose(:, 2), 'k-', 'linewidth', 2);
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
-    legend('Sensor', 'Odometry', 'Tracker');
 
+    legend('Sensor', 'Odometry', 'Tracker');
     drawnow;
+    print(h, "./output/trajectory_sensor.png");
   end
     
   waitfor(h);
@@ -119,8 +120,8 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
 
     legend('Sensor', 'Tracker', 'Sensor error trajectory');
     drawnow;
+    print(h, "./output/error_trajectory_sensor.png");
   end
-
 
   printf('The sensor error mean is %f on x and %f on y\n', mean(error_sensor(:, 1)), mean(error_sensor(:, 2)));
   waitfor(h);
@@ -153,6 +154,7 @@ function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktr
   plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
   legend('Ksteer');
   drawnow;
+  print(h, "./output/Ksteer_calibration_errors.png");
   waitfor(h);
 
   hold on;
@@ -165,6 +167,7 @@ function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktr
   plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
   legend('Ktraction');
   drawnow;
+  print(h, "./output/Ktraction_calibration_errors.png");
   waitfor(h);
 
 	delta_Ksteer_Ktraction = -H\b;
@@ -235,6 +238,7 @@ function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibrat
   plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
   legend('Axis length');
   drawnow;
+  print(h, "./output/Axis_length_calibration_errors.png");
   waitfor(h);
 
   hold on;
@@ -247,6 +251,7 @@ function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibrat
   plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
   legend('Steer offset');
   drawnow;
+  print(h, "./output/Steer_offset_calibration_errors.png");
   waitfor(h);
 
 	delta_axis_length_steer_offset = -H\b;
