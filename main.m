@@ -54,12 +54,12 @@ plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
 disp('Calibration of: Ksteer and Ktraction');
 Ksteer_Ktraction = [Ksteer, Ktraction];
 Z_ticks_pose = [ticks(:, 1:2), model_pose(:, 1:3), tracker_pose(:, 1:3)];
-Ksteer_Ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time);
+Ksteer_Ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time, h);
 disp(Ksteer_Ktraction_calibrated);
 
 #The kinematic parameters: SteerOffset and Baseline
 disp('Calibration of: SteerOffset and Baseline');
 axis_length_steer_offset = [axis_length, steer_offset];
 Z_pose = [pose_sensor(:, 1:3), model_pose(:, 1:3), tracker_pose(:, 1:3)];
-axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose);
+axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose, time, h);
 disp(axis_length_steer_offset_calibrated);

@@ -126,18 +126,46 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
   waitfor(h);
 endfunction
 
-function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time)
+function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time, h)
 	H = zeros(4, 4);
 	b = zeros(4, 1);
   delta_time = diff(time);
   delta_time = [delta_time; delta_time(end)];
+  errors = zeros(size(Ksteer_Ktraction, 1), 2);
 	
 	for i = 1:size(Z_ticks_pose,1)
 		error = Ksteer_Ktraction_error_estimate(i, Ksteer_Ktraction, Z_ticks_pose, delta_time);
 		J = jacobian_Ksteer_Ktraction(i, Z_ticks_pose, delta_time);
 		H = H + J'*J;
 		b = b + J'*error;
+
+    errors(i, :) = [error'];
 	end
+
+  time_norm = time - time(1);
+  hold on;
+  grid on;
+  title('Ksteer calibration errors');
+  xlabel('Time normalized');
+  ylabel('Error');
+  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  ylim([min(errors(:, 1)), max(errors(:, 1))]);
+  plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
+  legend('Ksteer');
+  drawnow;
+  waitfor(h);
+
+  hold on;
+  grid on;
+  title('Ktraction calibration errors');
+  xlabel('Time normalized');
+  ylabel('Error');
+  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  ylim([min(errors(:, 2)), max(errors(:, 2))]);
+  plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
+  legend('Ktraction');
+  drawnow;
+  waitfor(h);
 
 	delta_Ksteer_Ktraction = -H\b;
   d_Ksteer_Ktraction = reshape(delta_Ksteer_Ktraction, 2, 2)';
@@ -182,16 +210,44 @@ function J = jacobian_Ksteer_Ktraction(i, Z_ticks_pose, delta_time)
 	J(2, 3:4)= -u;
 endfunction
 
-function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose)
+function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose, time, h)
 	H = zeros(4, 4);
 	b = zeros(4, 1);
+  errors = zeros(size(axis_length_steer_offset, 1), 2);
 	
 	for i = 1:size(Z_pose, 1)
 		error = axis_length_steer_offset_error_estimate(i, axis_length_steer_offset, Z_pose);
 		J = jacobian_axis_length_steer_offset(i, Z_pose);
 		H = H + J'*J;
 		b = b + J'*error;
+
+	  errors(i, :) = [error'];
 	end
+
+  time_norm = time - time(1);
+  hold on;
+  grid on;
+  title('Axis length calibration errors');
+  xlabel('Time normalized');
+  ylabel('Error');
+  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  ylim([min(errors(:, 1)), max(errors(:, 1))]);
+  plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
+  legend('Axis length');
+  drawnow;
+  waitfor(h);
+
+  hold on;
+  grid on;
+  title('Steer offset calibration errors');
+  xlabel('Time normalized');
+  ylabel('Error');
+  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  ylim([min(errors(:, 2)), max(errors(:, 2))]);
+  plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
+  legend('Steer offset');
+  drawnow;
+  waitfor(h);
 
 	delta_axis_length_steer_offset = -H\b;
   d_axis_length_steer_offset = reshape(delta_axis_length_steer_offset, 2, 2)';
