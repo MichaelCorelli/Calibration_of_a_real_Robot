@@ -1,4 +1,5 @@
 
+%{
 function R = rotation(theta)
   s = sin(theta);
   c = cos(theta);
@@ -27,6 +28,50 @@ function pose_sensor = position_sensor(model_pose, tracker_pose)
 
   end
 endfunction
+%}
+
+function pose_sensor = sensor_pose_correction(pose_s, Z_sensor);
+	pose_sensor = zeros(size(Z_sensor, 1), 3);
+
+	for i=1:size(Z_sensor, 1),
+		u = Z_sensor(i,1:3)';
+		uc = pose_s*u;
+		pose_sensor(i,:) = uc;
+	end
+
+end
+
+function pose_sensor = position_sensor(Z)
+	H = zeros(9, 9);
+	b = zeros(9, 1);
+	pose_sensor = eye(3); 
+
+	for i = 1:size(Z, 1),
+		error_sensor = error_pose_sensor(i, pose_sensor, Z);
+		J = jacobian_sensor(i, Z);
+		H = H + J'*J;
+		b = b + J'*error_sensor;
+	end
+
+	delta_sensor = -H\b;
+	d_sensor = reshape(delta_sensor, 3, 3)';
+	pose_sensor = pose_sensor + d_sensor;
+end
+
+function error_sensor = error_pose_sensor(i, pose_sensor, Z)
+	ustar = Z(i,1:3)';
+	u = Z(i,4:6)';
+	error_sensor = ustar - pose_sensor*u;
+end
+
+function J = jacobian_sensor(i, Z)
+	u = Z(i, 4:6);
+	J = zeros(3,9);
+
+	J(1, 1:3)= -u;
+	J(2, 4:6)= -u;
+	J(3, 7:9)= -u;
+end
 
 function plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h, time)
   hold on;
@@ -171,6 +216,7 @@ function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktr
   drawnow;
   saveas(h, name_file);
   waitfor(h);
+  pause(1);
 
   name_file = "./output/Ktraction_calibration_errors.png";
   if exist(name_file, "file")
@@ -189,6 +235,7 @@ function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktr
   drawnow;
   saveas(h, name_file);
   waitfor(h);
+  pause(1);
 
 	delta_Ksteer_Ktraction = -H\b;
   d_Ksteer_Ktraction = reshape(delta_Ksteer_Ktraction, 2, 2)';
@@ -268,6 +315,7 @@ function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibrat
   drawnow;
   saveas(h, name_file);
   waitfor(h);
+  pause(1);
 
   name_file = "./output/Steer_offset_calibration_errors.png";
   if exist(name_file, "file")
@@ -286,6 +334,7 @@ function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibrat
   drawnow;
   saveas(h, name_file);
   waitfor(h);
+  pause(1);
 
 	delta_axis_length_steer_offset = -H\b;
   d_axis_length_steer_offset = reshape(delta_axis_length_steer_offset, 2, 2)';

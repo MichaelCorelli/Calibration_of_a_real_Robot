@@ -36,19 +36,36 @@ tracker_pose = [Z{7}, Z{8}, Z{9}];
 
 disp('Dataset loaded');
 
+%{
 %2D position of the sensor w.r.t. the base link
 pose_sensor = position_sensor(model_pose, tracker_pose);
 
 disp("2D position of the sensor w.r.t. the base link:");
 disp(pose_sensor);
+pause(1);
+%}
+
+Z_sensor = [model_pose, tracker_pose];
+pose_s = position_sensor(Z_sensor);
+disp(pose_s);
+pause(1);
+
+disp('Calibrated sensor position');
+pose_sensor = sensor_pose_correction(pose_s, Z_sensor(:,4:6));
+
+disp("2D position of the sensor w.r.t. the base link:");
+disp(pose_sensor);
+pause(1);
 
 #2D trajectory of the sensor w.r.t. the base link
 disp('2D trajectory of the sensor w.r.t. the base link');
 plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h, time);
+pause(1);
 
 #2D error trajectory of the sensor w.r.t. the base link
 disp('2D error trajectory of the sensor w.r.t. the base link');
 plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
+pause(1);
 
 #The kinematic parameters: Ksteer and Ktraction
 disp('Calibration of: Ksteer and Ktraction');
