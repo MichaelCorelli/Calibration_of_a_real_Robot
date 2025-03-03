@@ -251,19 +251,19 @@ function Ksteer_error = Ksteer_error(i, Ksteer_Ktraction, Z_ticks_pose)
   model_theta = Z_ticks_pose(i, 5);
   tracker_theta = Z_ticks_pose(i, 8);
   diff_theta = tracker_theta - model_theta;
-  Ksteer_error = Ksteer_ticks - Ksteer_Ktraction*diff_theta;
+  Ksteer_error = Ksteer_ticks - (1/Ksteer_Ktraction)*diff_theta;
 endfunction
 
 function Ktraction_error = Ktraction_error(i, Ksteer_Ktraction, Z_ticks_pose, delta_time)
   Ktraction_ticks = Z_ticks_pose(i, 2);
   tracker_pose = Z_ticks_pose(:, 6:7);
-  if i < size(Z_ticks_pose, 1)
-    diff_pose = sqrt((tracker_pose(i+1, 1) - tracker_pose(i, 1))^2 + (tracker_pose(i+1, 2) - tracker_pose(i, 2))^2);
+  if i > 1
+    diff_pose = sqrt((tracker_pose(i - 1, 1) - tracker_pose(i, 1))^2 + (tracker_pose(i - 1, 2) - tracker_pose(i, 2))^2);
   else
     diff_pose = 0;
   end
 
-  Ktraction_error = Ktraction_ticks - Ksteer_Ktraction*diff_pose;
+  Ktraction_error = Ktraction_ticks - (1/Ksteer_Ktraction)*diff_pose;
 endfunction
 
 function J = jacobian_Ksteer_Ktraction(i, Z_ticks_pose, delta_time)
@@ -356,12 +356,12 @@ function axis_length_error = axis_length_error(i, axis_length_steer_offset, Z_po
 endfunction
 
 function steer_offset_error = steer_offset_error(i, axis_length_steer_offset, Z_pose)
-  theta_sensor = Z_pose(i, 3);
+  sensor_theta = Z_pose(i, 3);
   model_theta = Z_pose(i, 6);
   tracker_theta = Z_pose(i, 9);
-  diff_theta_sensor = theta_sensor - model_theta;
+  diff_sensor_theta = sensor_theta - model_theta;
   diff_theta = tracker_theta - model_theta;
-  steer_offset_error = diff_theta_sensor - axis_length_steer_offset*diff_theta;
+  steer_offset_error = diff_sensor_theta - axis_length_steer_offset*diff_theta;
 endfunction
 
 function J = jacobian_axis_length_steer_offset(i, Z_pose)

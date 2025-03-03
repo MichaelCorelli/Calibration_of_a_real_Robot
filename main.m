@@ -51,7 +51,7 @@ disp(pose_s);
 pause(1);
 
 disp('Calibrated sensor position');
-pose_sensor = sensor_pose_correction(pose_s, Z_sensor(:,4:6));
+pose_sensor = sensor_pose_correction(pose_s, Z_sensor(:, 4:6));
 
 disp("2D position of the sensor w.r.t. the base link:");
 disp(pose_sensor);
@@ -69,7 +69,7 @@ pause(1);
 
 #The kinematic parameters: Ksteer and Ktraction
 disp('Calibration of: Ksteer and Ktraction');
-Ksteer_Ktraction = [1/Ksteer, 1/Ktraction];
+Ksteer_Ktraction = [Ksteer, Ktraction];
 Z_ticks_pose = [ticks(:, 1:2), model_pose(:, 1:3), tracker_pose(:, 1:3)];
 Ksteer_Ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time, h);
 disp(Ksteer_Ktraction_calibrated);
