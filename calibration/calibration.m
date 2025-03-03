@@ -64,13 +64,18 @@ function plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h
     end
 
   else
+    name_file = "./output/trajectory_sensor.png";
+    if exist(name_file, "file")
+        delete(name_file);
+    end
+
     plot(pose_sensor(:, 1), pose_sensor(:, 2), 'r-', 'linewidth', 2);
     plot(model_pose(:, 1), model_pose(:, 2), 'k-', 'linewidth', 2);
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
 
     legend('Sensor', 'Odometry', 'Tracker');
     drawnow;
-    print(h, "./output/trajectory_sensor.png");
+    saveas(h, name_file);
   end
     
   waitfor(h);
@@ -114,13 +119,18 @@ function plot_sensor_error(pose_sensor, tracker_pose, moving, h, time)
     end
 
   else
+    name_file = "./output/error_trajectory_sensor.png";
+    if exist(name_file, "file")
+        delete(name_file);
+    end
+
     plot(pose_sensor(:, 1), pose_sensor(:, 2), 'r-', 'linewidth', 2);
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
     plot(error_sensor(:, 1), error_sensor(:, 2), 'g-', 'linewidth', 2);
 
     legend('Sensor', 'Tracker', 'Sensor error trajectory');
     drawnow;
-    print(h, "./output/error_trajectory_sensor.png");
+    saveas(h, name_file);
   end
 
   printf('The sensor error mean is %f on x and %f on y\n', mean(error_sensor(:, 1)), mean(error_sensor(:, 2)));
@@ -144,30 +154,40 @@ function ksteeer_ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktr
 	end
 
   time_norm = time - time(1);
+  name_file = "./output/Ksteer_calibration_errors.png";
+  if exist(name_file, "file")
+      delete(name_file);
+  end
+
   hold on;
   grid on;
   title('Ksteer calibration errors');
-  xlabel('Time normalized');
+  xlabel('Iterations');
   ylabel('Error');
-  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  xlim([1 size(Z_ticks_pose, 1)]);
   ylim([min(errors(:, 1)), max(errors(:, 1))]);
-  plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
+  plot(1:size(Z_ticks_pose, 1), errors(:, 1), 'r-', 'linewidth', 2);
   legend('Ksteer');
   drawnow;
-  print(h, "./output/Ksteer_calibration_errors.png");
+  saveas(h, name_file);
   waitfor(h);
+
+  name_file = "./output/Ktraction_calibration_errors.png";
+  if exist(name_file, "file")
+      delete(name_file);
+  end
 
   hold on;
   grid on;
   title('Ktraction calibration errors');
-  xlabel('Time normalized');
+  xlabel('Iterations');
   ylabel('Error');
-  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  xlim([1 size(Z_ticks_pose, 1)]);
   ylim([min(errors(:, 2)), max(errors(:, 2))]);
-  plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
+  plot(1:size(Z_ticks_pose, 1), errors(:, 2), 'b-', 'linewidth', 2);
   legend('Ktraction');
   drawnow;
-  print(h, "./output/Ktraction_calibration_errors.png");
+  saveas(h, name_file);
   waitfor(h);
 
 	delta_Ksteer_Ktraction = -H\b;
@@ -189,12 +209,14 @@ endfunction
 
 function Ktraction_error = Ktraction_error(i, Ksteer_Ktraction, Z_ticks_pose, delta_time)
   Ktraction_ticks = Z_ticks_pose(i, 2);
-  model_pose = Z_ticks_pose(i, 3:4);
-  tracker_pose = Z_ticks_pose(i, 6:7);
-  diff_pose = sqrt((tracker_pose(1) - model_pose(1))^2 + (tracker_pose(2) - model_pose(2))^2);
-  
-  meters = diff_pose/delta_time(i);
-  Ktraction_error = Ktraction_ticks - Ksteer_Ktraction*meters;
+  tracker_pose = Z_ticks_pose(:, 6:7);
+  if i < size(Z_ticks_pose, 1)
+    diff_pose = sqrt((tracker_pose(i+1, 1) - tracker_pose(i, 1))^2 + (tracker_pose(i+1, 2) - tracker_pose(i, 2))^2);
+  else
+    diff_pose = 0;
+  end
+
+  Ktraction_error = Ktraction_ticks - Ksteer_Ktraction*diff_pose;
 endfunction
 
 function J = jacobian_Ksteer_Ktraction(i, Z_ticks_pose, delta_time)
@@ -228,30 +250,41 @@ function axis_length_steer_offset_calibrated = axis_length_steer_offset_calibrat
 	end
 
   time_norm = time - time(1);
+
+  name_file = "./output/Axis_length_calibration_errors.png";
+  if exist(name_file, "file")
+      delete(name_file);
+  end
+
   hold on;
   grid on;
   title('Axis length calibration errors');
-  xlabel('Time normalized');
+  xlabel('Iterations');
   ylabel('Error');
-  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  xlim([1 size(Z_pose, 1)]);
   ylim([min(errors(:, 1)), max(errors(:, 1))]);
-  plot(time_norm(:, 1), errors(:, 1), 'r-', 'linewidth', 2);
+  plot(1:size(Z_pose, 1), errors(:, 1), 'r-', 'linewidth', 2);
   legend('Axis length');
   drawnow;
-  print(h, "./output/Axis_length_calibration_errors.png");
+  saveas(h, name_file);
   waitfor(h);
+
+  name_file = "./output/Steer_offset_calibration_errors.png";
+  if exist(name_file, "file")
+      delete(name_file);
+  end
 
   hold on;
   grid on;
   title('Steer offset calibration errors');
-  xlabel('Time normalized');
+  xlabel('Iterations');
   ylabel('Error');
-  xlim([min(time_norm(:, 1)) max(time_norm(:, 1))]);
+  xlim([1 size(Z_pose, 1)]);
   ylim([min(errors(:, 2)), max(errors(:, 2))]);
-  plot(time_norm(:, 1), errors(:, 2), 'b-', 'linewidth', 2);
+  plot(1:size(Z_pose, 1), errors(:, 2), 'b-', 'linewidth', 2);
   legend('Steer offset');
   drawnow;
-  print(h, "./output/Steer_offset_calibration_errors.png");
+  saveas(h, name_file);
   waitfor(h);
 
 	delta_axis_length_steer_offset = -H\b;
