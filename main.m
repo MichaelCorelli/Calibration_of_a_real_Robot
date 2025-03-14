@@ -3,7 +3,7 @@ close all
 clear
 clc
 
-source "calibration/calibration.m"
+source "robot_calibration/calibration.m"
 
 #to observer the robot and sensor trajectories moving set: on
 args = argv();
@@ -33,50 +33,64 @@ time = Z{1};
 ticks = [Z{2}, Z{3}];
 model_pose = [Z{4}, Z{5}, Z{6}];
 tracker_pose = [Z{7}, Z{8}, Z{9}];
+max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
 
-%{
-%2D position of the sensor w.r.t. the base link
-pose_sensor = position_sensor(model_pose, tracker_pose);
+%elimination of the overflowed ticks
+delta_ticks = zeros(size(ticks, 1), 2);
 
-disp("2D position of the sensor w.r.t. the base link:");
-disp(pose_sensor);
+for i = 1:size(ticks, 1)
+    if i == 1
+        delta_ticks(i, :) = [0, 0];
+    else
+        diff_steer = (ticks(i,1) - ticks(i-1,1));
+        diff_traction = (ticks(i,2) - ticks(i-1,2));
+        
+        if abs(diff_steer) > max_encoder_value(1)/2
+            if (diff_steer) < 0
+                diff_steer = (max_encoder_value(1) - ticks(i-1, 1)) + ticks(i,1);
+            else
+                diff_steer = (max_encoder_value(1) - ticks(i, 1)) + ticks(i-1,1);
+            end
+        end
+
+        if abs((ticks(i,2) - ticks(i-1,2))/max_encoder_value(2)) > max_encoder_value(2)/2
+            if (diff_traction) < 0
+                diff_traction = max_encoder_value(2) - ticks(i, 2);
+            else
+                diff_traction = max_encoder_value(2) + ticks(i-1, 2);
+            end
+        end
+
+        steer = (diff_steer)/(max_encoder_value(1)/2);
+        traction = (diff_traction*60)/(max_encoder_value(2)/2);
+
+        steer_grad = steer*(360/(2*pi));
+        traction_grad = traction/(2*pi);
+        
+        delta_ticks(i, :) = [steer_grad, traction_grad];
+    end
+end
+
+#compute the delta time
+delta_time = zeros(size(time, 1), 1);
+for i=1:size(time, 1)
+    if i == 1
+        delta_time(i, 1) = 0;
+    else
+        delta_time(i, 1) = time(i, 1) - time(i-1, 1);
+    end
+end
+
+#odometry of front-tractor tricycle
+x = [Ksteer, Ktraction, axis_length, steer_offset];
+odometry_pose = odometry(x, delta_ticks, delta_time);
+
+#plot of: odometry, tracker and odometry estimated
+plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
 pause(1);
-%}
 
-Z_sensor = [model_pose, tracker_pose];
-pose_s = position_sensor(Z_sensor);
-disp(pose_s);
+#plot of odometry estimated: L2 Norm error
+plot_odometry_error(model_pose, odometry_pose, moving, h, time)
 pause(1);
-
-disp('Calibrated sensor position');
-pose_sensor = sensor_pose_correction(pose_s, Z_sensor(:, 4:6));
-
-disp("2D position of the sensor w.r.t. the base link:");
-disp(pose_sensor);
-pause(1);
-
-#2D trajectory of the sensor w.r.t. the base link
-disp('2D trajectory of the sensor w.r.t. the base link');
-plot_sensor_trajectory(pose_sensor, model_pose, tracker_pose, moving, h, time);
-pause(1);
-
-#2D error trajectory of the sensor w.r.t. the base link
-disp('2D error trajectory of the sensor w.r.t. the base link');
-plot_sensor_error(pose_sensor, tracker_pose, moving, h, time);
-pause(1);
-
-#The kinematic parameters: Ksteer and Ktraction
-disp('Calibration of: Ksteer and Ktraction');
-Ksteer_Ktraction = [Ksteer, Ktraction];
-Z_ticks_pose = [ticks(:, 1:2), model_pose(:, 1:3), tracker_pose(:, 1:3)];
-Ksteer_Ktraction_calibrated = ksteeer_ktraction_calibration(Ksteer_Ktraction, Z_ticks_pose, time, h);
-disp(Ksteer_Ktraction_calibrated);
-
-#The kinematic parameters: SteerOffset and Baseline
-disp('Calibration of: SteerOffset and Baseline');
-axis_length_steer_offset = [axis_length, steer_offset];
-Z_pose = [pose_sensor(:, 1:3), model_pose(:, 1:3), tracker_pose(:, 1:3)];
-axis_length_steer_offset_calibrated = axis_length_steer_offset_calibration(axis_length_steer_offset, Z_pose, time, h);
-disp(axis_length_steer_offset_calibrated);
