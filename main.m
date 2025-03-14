@@ -32,7 +32,7 @@ fclose(file);
 time = Z{1};
 ticks = [Z{2}, Z{3}];
 model_pose = [Z{4}, Z{5}, Z{6}];
-tracker_pose = [Z{7}, Z{8}, Z{9}];
+tracker_pose = [Z{7}, Z{8}, Z{9}]; #the ground truth trajectory
 max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
@@ -48,10 +48,9 @@ x = [Ksteer, Ktraction, axis_length, steer_offset];
 odometry_pose = odometry(x, delta_ticks, delta_time);
 
 #plot of: odometry, tracker and odometry estimated
-plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
+plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time);
 pause(1);
 
 #plot of odometry estimated: L2 Norm error
-plot_odometry_error(model_pose, odometry_pose, moving, h, time)
+plot_odometry_error(model_pose, odometry_pose, moving, h, time);
 pause(1);
-

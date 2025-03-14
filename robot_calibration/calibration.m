@@ -1,4 +1,5 @@
 
+%odometry and calibration functions
 function delta_ticks = delta_ticks(ticks, max_encoder_value)
   delta_ticks = zeros(size(ticks, 1), 2);
 
@@ -28,10 +29,10 @@ function delta_ticks = delta_ticks(ticks, max_encoder_value)
           steer = (diff_steer)/(max_encoder_value(1)/2);
           traction = (diff_traction*60)/(max_encoder_value(2)/2);
 
-          steer_grad = steer*(360/(2*pi));
-          traction_grad = traction/(2*pi);
+          steer_rad = steer*(360/(2*pi));
+          traction_rad = traction/(2*pi);
           
-          delta_ticks(i, :) = [steer_grad, traction_grad];
+          delta_ticks(i, :) = [steer_rad, traction_rad];
       end
   end
 endfunction
@@ -73,6 +74,7 @@ function state = odometry(x, delta_ticks, delta_time)
   end
 endfunction
 
+%plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
   hold on;
   grid on;
@@ -118,7 +120,11 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
 
     legend('Odometry', 'Tracker', 'Odometry estimated');
     drawnow;
-    saveas(h, name_file);
+    try
+      saveas(h, name_file);
+    catch
+      disp("Plot closed before saving is completed");
+    end
   end
     
   waitfor(h);
@@ -139,7 +145,7 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
 
   if moving
     line = plot(NaN, NaN, 'g-', 'linewidth', 2);
-    legend([line], {'Odometry estimated: L2 Norm error'});
+    legend({'Odometry estimated: L2 Norm error'});
         
     for i = 1:size(model_pose, 1),
       if ishandle(h)
@@ -163,13 +169,18 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
 
     legend('Odometry estimated: L2 Norm error');
     drawnow;
-    saveas(h, name_file);
+    try
+      saveas(h, name_file);
+    catch
+      disp("Plot closed before saving is completed");
+    end
   end
 
   printf('Odometry estimated: error mean is %f on x and %f on y\n', mean(error_odometry(:, 1)), mean(error_odometry(:, 2)));
   waitfor(h);
 endfunction
 
+%{
 function calibrated_trajectory = odometry_correction(parameters_calibration, trajectory)
 	calibrated_trajectory = zeros(size(trajectory, 1), 3);
 
@@ -211,3 +222,4 @@ function J = jacobian(i, trajectory)
 	J(2, 4:6) = -u;
 	J(3, 7:9) = -u;
 end
+%}
