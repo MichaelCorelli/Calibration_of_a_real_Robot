@@ -37,51 +37,11 @@ max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
 
-%elimination of the overflowed ticks
-delta_ticks = zeros(size(ticks, 1), 2);
+%delta ticks
+delta_ticks = delta_ticks(ticks, max_encoder_value);
 
-for i = 1:size(ticks, 1)
-    if i == 1
-        delta_ticks(i, :) = [0, 0];
-    else
-        diff_steer = (ticks(i,1) - ticks(i-1,1));
-        diff_traction = (ticks(i,2) - ticks(i-1,2));
-        
-        if abs(diff_steer) > max_encoder_value(1)/2
-            if (diff_steer) < 0
-                diff_steer = (max_encoder_value(1) - ticks(i-1, 1)) + ticks(i,1);
-            else
-                diff_steer = (max_encoder_value(1) - ticks(i, 1)) + ticks(i-1,1);
-            end
-        end
-
-        if abs((ticks(i,2) - ticks(i-1,2))/max_encoder_value(2)) > max_encoder_value(2)/2
-            if (diff_traction) < 0
-                diff_traction = max_encoder_value(2) - ticks(i, 2);
-            else
-                diff_traction = max_encoder_value(2) + ticks(i-1, 2);
-            end
-        end
-
-        steer = (diff_steer)/(max_encoder_value(1)/2);
-        traction = (diff_traction*60)/(max_encoder_value(2)/2);
-
-        steer_grad = steer*(360/(2*pi));
-        traction_grad = traction/(2*pi);
-        
-        delta_ticks(i, :) = [steer_grad, traction_grad];
-    end
-end
-
-#compute the delta time
-delta_time = zeros(size(time, 1), 1);
-for i=1:size(time, 1)
-    if i == 1
-        delta_time(i, 1) = 0;
-    else
-        delta_time(i, 1) = time(i, 1) - time(i-1, 1);
-    end
-end
+#delta time
+delta_time = delta_time(time);
 
 #odometry of front-tractor tricycle
 x = [Ksteer, Ktraction, axis_length, steer_offset];
@@ -94,3 +54,4 @@ pause(1);
 #plot of odometry estimated: L2 Norm error
 plot_odometry_error(model_pose, odometry_pose, moving, h, time)
 pause(1);
+
