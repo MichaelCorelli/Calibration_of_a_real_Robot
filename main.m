@@ -54,3 +54,19 @@ pause(1);
 #plot of odometry estimated: L2 Norm error
 plot_odometry_error(model_pose, odometry_pose, moving, h, time);
 pause(1);
+
+%odometry calibration
+Z = [tracker_pose, odometry_pose];
+odometry_calibration = odometry_calibration(Z);
+disp(odometry_calibration);
+pause(1);
+
+%odometry calibrated
+odometry_calibrated = odometry_correction(odometry_calibration, Z(:, 4:7));
+
+%plot of calibrated odometry
+hold on;
+plot(odometry_calibrated(:,1), odometry_calibrated(:,2), 'b-', 'linewidth', 2);
+plot(tracker_pose(:,1), tracker_pose(:,2), 'r-', 'linewidth', 2);
+drawnow;
+waitfor(h);

@@ -26,13 +26,10 @@ function delta_ticks = delta_ticks(ticks, max_encoder_value)
               end
           end
 
-          steer = (diff_steer)/(max_encoder_value(1)/2);
+          steer = (diff_steer*360)/(max_encoder_value(1)/2);
           traction = (diff_traction*60)/(max_encoder_value(2)/2);
-
-          steer_rad = steer*(360/(2*pi));
-          traction_rad = traction/(2*pi);
           
-          delta_ticks(i, :) = [steer_rad, traction_rad];
+          delta_ticks(i, :) = [steer/(2*pi), traction/(2*pi)];
       end
   end
 endfunction
@@ -73,6 +70,48 @@ function state = odometry(x, delta_ticks, delta_time)
     state(i, :) = delta;
   end
 endfunction
+
+function odometry_calibrated = odometry_correction(odometry_calibration, Z)
+	odometry_calibrated = zeros(size(Z, 1), 3);
+
+	for i = 1:size(Z, 1),
+		u = Z(i, 1:4)';
+		uc = odometry_calibration*u;
+		odometry_calibrated(i,:) = uc;
+	end
+end
+
+function odometry_calibration = odometry_calibration(Z)
+	H = zeros(12, 12);
+	b = zeros(12, 1);
+	odometry_calibration = eye(3, 4); 
+	
+	for i=1:size(Z,1),
+		e = error(i, odometry_calibration, Z);
+		J = jacobian(i, Z);
+		H = H + J'*J;
+		b = b + J'*e;
+	end
+
+	#solve the linear system
+	delta_odometry_calibration = -H\b;
+	dodometry_calibration = reshape(delta_odometry_calibration, 4, 3)';
+	odometry_calibration = odometry_calibration + dodometry_calibration;
+end
+
+function e = error(i,X,Z)
+	ustar=Z(i, 1:3)';
+	u =Z(i, 4:7)';
+	e = ustar - X*u;
+end
+
+function J = jacobian(i, Z)
+	u = Z(i, 4:7);
+	J = zeros(3, 12);
+	J(1, 1:4) = -u;
+	J(2, 5:8) = -u;
+	J(3, 9:12) = -u;
+end
 
 %plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
@@ -179,47 +218,3 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
   printf('Odometry estimated: error mean is %f on x and %f on y\n', mean(error_odometry(:, 1)), mean(error_odometry(:, 2)));
   waitfor(h);
 endfunction
-
-%{
-function calibrated_trajectory = odometry_correction(parameters_calibration, trajectory)
-	calibrated_trajectory = zeros(size(trajectory, 1), 3);
-
-	for i = 1:size(trajectory, 1),
-		u = trajectory(i,1:3)';
-		uc = parameters_calibration*u;
-		calibrated_trajectory(i,:) = uc;
-	end
-end
-
-function parameters_calibration = odometry_calibration(trajectory)
-	H = zeros(9, 9);
-	b = zeros(9, 1);
-	parameters_calibration = eye(3); 
-	
-	for i=1:size(trajectory,1),
-		e = error(i, parameters_calibration, trajectory);
-		J = jacobian(i, trajectory);
-		H = H + J'*J;
-		b = b + J'*e;
-	end
-
-	#solve the linear system
-	delta_parameters_calibration = -H\b;
-	dparameters_calibration=reshape(delta_parameters_calibration, 3, 3)';
-	parameters_calibration = parameters_calibration + dparameters_calibration;
-end
-
-function e = error(i,X,trajectory)
-	ustar=trajectory(i,1:3)';
-	u=trajectory(i,4:6)';
-	e= ustar-X*u;
-end
-
-function J = jacobian(i, trajectory)
-	u = trajectory(i, 4:6);
-	J = zeros(3,9);
-	J(1, 1:3) = -u;
-	J(2, 4:6) = -u;
-	J(3, 7:9) = -u;
-end
-%}
