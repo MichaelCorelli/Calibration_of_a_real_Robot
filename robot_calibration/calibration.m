@@ -207,7 +207,7 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
       if ishandle(h)
         set(line, 'XData', delta_time(1:i), 'YData', L2_norm(1:i));
 
-        printf('Odometry estimated: error at time %f is %f on x and %f on y\n', time(i, 1), error_odometry(i, 1), error_odometry(i, 2));
+        printf('L2 Norm error at time %f is %f\n', time(i, 1), L2_norm(i));
         pause(delta_time(i));
         drawnow;
       else
@@ -232,6 +232,6 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
     end
   end
 
-  printf('Odometry estimated: error mean is %f on x and %f on y\n', mean(error_odometry(:, 1)), mean(error_odometry(:, 2)));
+  printf('L2 Norm error: mean %f, min %f, max %f.\n', mean(L2_norm), min(L2_norm), max(L2_norm));
   waitfor(h);
 endfunction
