@@ -23,5 +23,8 @@ to observer the robot and sensor trajectories moving set:
 octave main.m on
 ```
 
+#### Threshold for estimation process
+In the estimation process is used different threshold for x, y, theta and phi. The achieve is skip increments that are too small, because they don’t bring any information to the estimate. The threshold have been chosen after tested different value. The best values achieve the following result for mean error: 0.310960 on x and 0.252648 on y. Without threshold get: 0.316149 on x and 0.255728 on y.
+
 #### Reference
 - https://gitlab.com/grisetti/probabilistic_robotics_2024_25

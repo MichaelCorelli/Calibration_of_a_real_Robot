@@ -51,6 +51,13 @@ function state = odometry(x, delta_ticks, delta_time)
   steer_offset = x(4);
   state = zeros(size(delta_ticks, 1), 4);
 
+  %threshold for increments that are too small
+  alpha_x = 1e-5;
+  alpha_y = 1e-5;
+  alpha_th = 1e-4;
+  alpha_phi = 1e-4;
+  alpha = [alpha_x, alpha_y, alpha_th, alpha_phi];
+
   for i = 1:size(delta_ticks, 1)
     ticks_steer = delta_ticks(i, 1);
     ticks_traction = delta_ticks(i, 2);
@@ -61,11 +68,21 @@ function state = odometry(x, delta_ticks, delta_time)
     if i == 1
       delta = [0, 0, 0, 0];
     else
-      dx = v * cos(state(i-1, 3))*cos(state(i-1, 4));
-      dy = v * sin(state(i-1, 3))*cos(state(i-1, 4));
-      dth = v * (sin(state(i-1, 4))/axis_length);
+      dx = v * cos(state(i-1, 3))*cos(state(i-1, 4))*delta_time(i, 1);
+      dy = v * sin(state(i-1, 3))*cos(state(i-1, 4))*delta_time(i, 1);
+      dth = v * (sin(state(i-1, 4))/axis_length)*delta_time(i, 1);
+      dphi = dphi*delta_time(i, 1);
 
-      delta = [state(i-1, 1) + dx*delta_time(i, 1), state(i-1, 2) + dy*delta_time(i, 1), state(i-1, 3) + dth*delta_time(i, 1), state(i-1, 4) + dphi*delta_time(i, 1)];
+      delta = [dx, dy, dth, dphi];
+
+      %skip increments that are too small
+      delta(abs(delta) < alpha) = 0;
+
+      if any(delta ~= 0)
+        delta = state(i-1, :) + delta;
+      else
+        delta = state(i-1, :);
+      end
     end
     state(i, :) = delta;
   end
