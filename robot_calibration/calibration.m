@@ -114,12 +114,19 @@ function odometry_calibration = odometry_calibration(Z)
 	delta_odometry_calibration = -H\b;
 	dodometry_calibration = reshape(delta_odometry_calibration, 4, 3)';
 	odometry_calibration = odometry_calibration + dodometry_calibration;
+
+  #normalization of theta and phi between -pi and pi
+  theta = odometry_calibration(:, 3);
+  phi = odometry_calibration(:, 4);
+
+  odometry_calibration(:, 3) = atan2(sin(theta), cos(theta));
+  odometry_calibration(:, 4) = atan2(sin(phi), cos(phi));
 end
 
-function e = error(i,X,Z)
-	ustar=Z(i, 1:3)';
-	u =Z(i, 4:7)';
-	e = ustar - X*u;
+function e = error(i, odometry_calibration, Z)
+	u_star = Z(i, 1:3)';
+	u = Z(i, 4:7)';
+	e = u_star - odometry_calibration*u;
 end
 
 function J = jacobian(i, Z)
