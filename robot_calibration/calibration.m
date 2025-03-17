@@ -44,12 +44,12 @@ function delta_time = delta_time(time)
   end
 endfunction
 
-function state = odometry(x, delta_ticks, delta_time)
+function odometry_pose = odometry(x, delta_ticks, delta_time)
   ksteer = x(1);
   ktraction = x(2);
   axis_length = x(3);
   steer_offset = x(4);
-  state = zeros(size(delta_ticks, 1), 4);
+  odometry_pose = zeros(size(delta_ticks, 1), 4);
 
   %threshold for increments that are too small
   alpha_x = 1e-5;
@@ -68,23 +68,26 @@ function state = odometry(x, delta_ticks, delta_time)
     if i == 1
       delta = [0, 0, 0, 0];
     else
-      dx = v * cos(state(i-1, 3))*cos(state(i-1, 4))*delta_time(i, 1);
-      dy = v * sin(state(i-1, 3))*cos(state(i-1, 4))*delta_time(i, 1);
-      dth = v * (sin(state(i-1, 4))/axis_length)*delta_time(i, 1);
+      dx = v * cos(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+      dy = v * sin(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+      dth = v * (sin(odometry_pose(i-1, 4))/axis_length)*delta_time(i, 1);
       dphi = dphi*delta_time(i, 1);
 
-      delta = [dx, dy, dth, dphi];
+      #noise
+      n = 0.00001;
+
+      delta = [dx, dy, dth, dphi] + n;
 
       %skip increments that are too small
       delta(abs(delta) < alpha) = 0;
 
       if any(delta ~= 0)
-        delta = state(i-1, :) + delta;
+        delta = odometry_pose(i-1, :) + delta;
       else
-        delta = state(i-1, :);
+        delta = odometry_pose(i-1, :);
       end
     end
-    state(i, :) = delta;
+    odometry_pose(i, :) = delta;
   end
 endfunction
 
