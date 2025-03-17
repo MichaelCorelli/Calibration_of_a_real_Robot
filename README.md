@@ -24,7 +24,7 @@ octave main.m on
 ```
 
 #### Threshold for estimation process
-In the estimation process is used different threshold for x, y, theta and phi. The achieve is skip increments that are too small, because they don’t bring any information to the estimate. The threshold have been chosen after tested different value. The best values achieve the following L2 Norm error results: mean 0.414178, min 0.000000, max 0.773649. Without threshold get: mean 0.420832, min 0.000000, max 0.788241.
+In the estimation process is used different threshold for x, y, theta and phi. The achieve is skip increments that are too small, because they don’t bring any information to the estimate. The threshold have been chosen after tested different value. The best values achieve the following L2 Norm error results: mean 0.190549, min 0.000000, max 0.306568. Without threshold get: mean 0.265269, min 0.000000, max 0.594321.
 
 #### Reference
 - https://gitlab.com/grisetti/probabilistic_robotics_2024_25
