@@ -15,23 +15,23 @@ function delta_ticks = delta_ticks(ticks, max_encoder_value)
                   diff_steer = (max_encoder_value(1) - ticks(i-1, 1)) + ticks(i,1);
               else
                   diff_steer = (max_encoder_value(1) - ticks(i, 1)) + ticks(i-1,1);
-              end
-          end
+              endif
+          endif
 
           if abs((ticks(i,2) - ticks(i-1,2))/max_encoder_value(2)) > max_encoder_value(2)/2
               if (diff_traction) < 0
                   diff_traction = max_encoder_value(2) - ticks(i, 2);
               else
                   diff_traction = max_encoder_value(2) + ticks(i-1, 2);
-              end
-          end
+              endif
+          endif
 
           steer = (diff_steer*360)/(max_encoder_value(1)/2);
           traction = (diff_traction*60)/(max_encoder_value(2)/2);
           
           delta_ticks(i, :) = [steer/(2*pi), traction/(2*pi)];
-      end
-  end
+      endif
+  endfor
 endfunction
 
 function delta_time = delta_time(time)
@@ -40,8 +40,8 @@ function delta_time = delta_time(time)
           delta_time(i, 1) = 0;
       else
           delta_time(i, 1) = time(i, 1) - time(i-1, 1);
-      end
-  end
+      endif
+  endfor
 endfunction
 
 function odometry_pose = odometry(x, delta_ticks, delta_time)
@@ -85,60 +85,82 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
         delta = odometry_pose(i-1, :) + delta;
       else
         delta = odometry_pose(i-1, :);
-      end
-    end
+      endif
+    endif
     odometry_pose(i, :) = delta;
-  end
+  endfor
 endfunction
 
-function odometry_calibrated = odometry_correction(odometry_calibration, Z)
-	odometry_calibrated = zeros(size(Z, 1), 3);
+function v = t2v(A)
+	v(1:2, 1) = A(1:2, 3);
+	v(3, 1) = atan2(A(2,1), A(1,1));
+endfunction
 
-	for i = 1:size(Z, 1),
-		u = Z(i, 1:4)';
-		uc = odometry_calibration*u;
-		odometry_calibrated(i,:) = uc;
-	end
-end
+function A = v2t(v)
+  c = cos(v(3));
+  s = sin(v(3));
+	A = [c, -s, v(1);
+	     s,  c, v(2);
+	     0,  0,   1];
+endfunction
 
-function odometry_calibration = odometry_calibration(Z)
-	H = zeros(12, 12);
-	b = zeros(12, 1);
-	odometry_calibration = eye(3, 4); 
-	
-	for i=1:size(Z,1),
-		e = error(i, odometry_calibration, Z);
-		J = jacobian(i, Z);
-		H = H + J'*J;
-		b = b + J'*e;
-	end
+function J = J_atan2(p)
+  J = [-p(2) p(1)];
+endfunction
 
-	#solve the linear system
-	delta_odometry_calibration = -H\b;
-	dodometry_calibration = reshape(delta_odometry_calibration, 4, 3)';
-	odometry_calibration = odometry_calibration + dodometry_calibration;
+function odometry_calibrated = odometry_correction(X, odometry)
+    odometry_calibrated = zeros(size(odometry, 1), 3);
+    for i = 1:size(odometry, 1),
+        u = odometry(i, :)';
+        uc = X*u;
+        odometry_calibrated(i, :) = uc;
+    endfor
+endfunction
 
-  #normalization of theta and phi between -pi and pi
-  theta = odometry_calibration(:, 3);
-  phi = odometry_calibration(:, 4);
+function [X, chi_stats] = odometry_calibration(odometry_pose, tracker_pose, n_iter)
+  X = eye(3);
+  chi_stats = zeros(1, n_iter);
+  n_inliers = zeros(1, n_iter);
+  threshold_kernel = 1e10;
+  damping = 1;
 
-  odometry_calibration(:, 3) = atan2(sin(theta), cos(theta));
-  odometry_calibration(:, 4) = atan2(sin(phi), cos(phi));
-end
+  for i = 1:n_iter
+    H = zeros(3, 3);
+    b = zeros(3, 1);
+    chi_stats(i) = 0;
 
-function e = error(i, odometry_calibration, Z)
-	u_star = Z(i, 1:3)';
-	u = Z(i, 4:7)';
-	e = u_star - odometry_calibration*u;
-end
+    for j = 1:size(odometry_pose, 1)
+      [e, J] = ErrorAndJacobian(X, odometry_pose(j, :), tracker_pose(j, :));
+      chi = e'*e;
 
-function J = jacobian(i, Z)
-	u = Z(i, 4:7);
-	J = zeros(3, 12);
-	J(1, 1:4) = -u;
-	J(2, 5:8) = -u;
-	J(3, 9:12) = -u;
-end
+      if (chi > threshold_kernel)
+        e = e*sqrt(threshold_kernel/chi);
+        chi = threshold_kernel;
+      else
+        n_inliers(i)++;
+      endif
+
+      chi_stats(i) = chi_stats(i) + chi;
+      H = H + J' * J;
+      b = b + J' * e;
+    endfor
+    H = H + eye(3)*damping;
+
+    dx = -H\b;
+    X = v2t(dx)*X;
+  endfor
+endfunction
+
+function [e, J] = ErrorAndJacobian(X, odometry_pose, tracker_pose)
+    R = X(1:2, 1:2);
+    t = X(1:2, 3);
+    z_hat = R*odometry_pose(1:2)' + t;
+    e = z_hat - tracker_pose(1:2)';
+
+    J = zeros(2, 3);
+    J(1:2, 1:2) = eye(2);
+    J(1:2, 3) = J_atan2(odometry_pose(1:2)');
+endfunction
 
 %plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
@@ -171,14 +193,14 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
         drawnow;
       else
         break;
-      end
-    end
+      endif
+    endfor
 
   else
     name_file = "./output/odometry_estimated.png";
     if exist(name_file, "file")
         delete(name_file);
-    end
+    endif
 
     plot(model_pose(:, 1), model_pose(:, 2), 'k-', 'linewidth', 2);
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
@@ -191,7 +213,7 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
     catch
       disp("Plot closed before saving is completed");
     end
-  end
+  endif
     
   waitfor(h);
 endfunction
@@ -222,14 +244,14 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
         drawnow;
       else
         break;
-      end
-    end
+      endif
+    endfor
 
   else
     name_file = "./output/error_odometry_estimated.png";
     if exist(name_file, "file")
         delete(name_file);
-    end
+    endif
 
     plot(delta_time, L2_norm, 'g-', 'linewidth', 2);
 
@@ -240,7 +262,7 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
     catch
       disp("Plot closed before saving is completed");
     end
-  end
+  endif
 
   printf('L2 Norm error: mean %f, min %f, max %f.\n', mean(L2_norm), min(L2_norm), max(L2_norm));
   waitfor(h);

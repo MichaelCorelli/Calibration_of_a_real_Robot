@@ -56,13 +56,15 @@ plot_odometry_error(model_pose, odometry_pose, moving, h, time);
 pause(1);
 
 %odometry calibration
-Z = [tracker_pose, odometry_pose];
-odometry_calibration = odometry_calibration(Z);
-disp(odometry_calibration);
+[X_result, chi_stats] = odometry_calibration(odometry_pose(:, 1:3), tracker_pose, 10);
+disp('X:')
+disp(X_result);
+disp('chi:')
+disp(chi_stats);
 pause(1);
 
 %odometry calibrated
-odometry_calibrated = odometry_correction(odometry_calibration, Z(:, 4:7));
+odometry_calibrated = odometry_correction(X_result, odometry_pose(:, 1:3));
 
 %plot of calibrated odometry
 hold on;
