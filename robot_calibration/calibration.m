@@ -1,5 +1,5 @@
 
-%odometry and calibration functions
+#odometry and calibration functions
 function delta_ticks = delta_ticks(ticks, max_encoder_value)
   delta_ticks = zeros(size(ticks, 1), 2);
 
@@ -7,18 +7,18 @@ function delta_ticks = delta_ticks(ticks, max_encoder_value)
       if i == 1
           delta_ticks(i, :) = [0, 0];
       else
-          diff_steer = (ticks(i,1) - ticks(i-1,1));
-          diff_traction = (ticks(i,2) - ticks(i-1,2));
+          diff_steer = (ticks(i, 1) - ticks(i-1, 1));
+          diff_traction = (ticks(i, 2) - ticks(i-1, 2));
           
           if abs(diff_steer) > max_encoder_value(1)/2
               if (diff_steer) < 0
-                  diff_steer = (max_encoder_value(1) - ticks(i-1, 1)) + ticks(i,1);
+                  diff_steer = (max_encoder_value(1) - ticks(i-1, 1)) + ticks(i, 1);
               else
-                  diff_steer = (max_encoder_value(1) - ticks(i, 1)) + ticks(i-1,1);
+                  diff_steer = (max_encoder_value(1) - ticks(i, 1)) + ticks(i-1, 1);
               endif
           endif
 
-          if abs((ticks(i,2) - ticks(i-1,2))/max_encoder_value(2)) > max_encoder_value(2)/2
+          if abs((ticks(i,2) - ticks(i-1, 2))/max_encoder_value(2)) > max_encoder_value(2)/2
               if (diff_traction) < 0
                   diff_traction = max_encoder_value(2) - ticks(i, 2);
               else
@@ -51,7 +51,7 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
   steer_offset = x(4);
   odometry_pose = zeros(size(delta_ticks, 1), 4);
 
-  %threshold for increments that are too small
+  #threshold for increments that are too small
   alpha_x = 1e-5;
   alpha_y = 1e-5;
   alpha_th = 1e-4;
@@ -78,7 +78,7 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
 
       delta = [dx, dy, dth, dphi] + n;
 
-      %skip increments that are too small
+      #skip increments that are too small
       delta(abs(delta) < alpha) = 0;
 
       if any(delta ~= 0)
@@ -104,33 +104,74 @@ function A = v2t(v)
 	     0,  0,   1];
 endfunction
 
-function J = J_atan2(p)
-  J = [-p(2) p(1)];
+function X = boxplus(x1, x2)
+  X = v2t(x2)*x1;
 endfunction
 
-function odometry_calibrated = odometry_correction(X, odometry)
-    odometry_calibrated = zeros(size(odometry, 1), 3);
-    for i = 1:size(odometry, 1),
-        u = odometry(i, :)';
-        uc = X*u;
-        odometry_calibrated(i, :) = uc;
-    endfor
+function X = boxminus(x1, x2)
+  X = t2v(x1*inv(x2));
 endfunction
 
-function [X, chi_stats] = odometry_calibration(odometry_pose, tracker_pose, n_iter)
-  X = eye(3);
+function odometry = odometry_update(x, i, odometry_pose, delta_ticks, delta_time)
+  ksteer = x(1);
+  ktraction = x(2);
+  axis_length = x(3);
+  steer_offset = x(4);
+
+  #threshold for increments that are too small
+  alpha_x = 1e-5;
+  alpha_y = 1e-5;
+  alpha_th = 1e-4;
+  alpha_phi = 1e-4;
+  alpha = [alpha_x, alpha_y, alpha_th, alpha_phi];
+
+  ticks_steer = delta_ticks(i, 1);
+  ticks_traction = delta_ticks(i, 2);
+
+  v = (ktraction*ticks_traction);
+  dphi = (ksteer*ticks_steer) + steer_offset;
+
+  if i == 1
+    delta = [0, 0, 0, 0];
+  else
+    dx = v * cos(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+    dy = v * sin(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+    dth = v * (sin(odometry_pose(i-1, 4))/axis_length)*delta_time(i, 1);
+    dphi = dphi*delta_time(i, 1);
+
+    #noise
+    n = 0.00001;
+
+    delta = [dx, dy, dth, dphi] + n;
+
+    #skip increments that are too small
+    delta(abs(delta) < alpha) = 0;
+
+    if any(delta ~= 0)
+      delta = odometry_pose(i-1, :) + delta;
+    else
+      delta = odometry_pose(i-1, :);
+    endif
+  endif
+  odometry = delta;
+endfunction
+
+function [X, chi_stats, n_inliers, odometry_calibration] = odometry_calibration(X, tracker_pose, delta_ticks, delta_time, n_iter)
+
   chi_stats = zeros(1, n_iter);
   n_inliers = zeros(1, n_iter);
-  threshold_kernel = 1e10;
+  threshold_kernel = 1e-4;
   damping = 1;
+  odometry_pose = zeros(size(delta_ticks, 1), 4);
 
   for i = 1:n_iter
-    H = zeros(3, 3);
-    b = zeros(3, 1);
+    H = zeros(length(X), length(X));
+    b = zeros(length(X), 1);
     chi_stats(i) = 0;
 
-    for j = 1:size(odometry_pose, 1)
-      [e, J] = ErrorAndJacobian(X, odometry_pose(j, :), tracker_pose(j, :));
+    for j = 1:size(tracker_pose, 1)
+      [e, J, odometry] = ErrorAndJacobian(X, j, odometry_pose, tracker_pose, delta_ticks, delta_time);
+      odometry_pose(j, :) = odometry;
       chi = e'*e;
 
       if (chi > threshold_kernel)
@@ -144,25 +185,37 @@ function [X, chi_stats] = odometry_calibration(odometry_pose, tracker_pose, n_it
       H = H + J' * J;
       b = b + J' * e;
     endfor
-    H = H + eye(3)*damping;
+    H = H + eye(4)*damping;
 
     dx = -H\b;
-    X = v2t(dx)*X;
+    X = X + dx;
+    fprintf('Iteration %d: X = [%f, %f, %f, %f] and chi stat = %f\n', i, X(1), X(2), X(3), X(4), chi_stats(i));
+  endfor
+  odometry_calibration = odometry_pose;
+endfunction
+
+function [e, J, odometry] = ErrorAndJacobian(X, j, odometry_pose, tracker_pose, delta_ticks, delta_time)
+  odometry = odometry_update(X, j, odometry_pose, delta_ticks, delta_time);
+  pred = v2t(odometry);
+  meas = v2t(tracker_pose(j, :));
+
+  e = boxminus(meas, pred);
+    
+  epsilon = 1e-4;
+  inv_eps2= 0.5/epsilon;
+  n = length(X);
+  J = zeros(3, n);
+
+  for i = 1:size(J, 1)
+    e_vec = zeros(length(X), 1);
+    e_vec(i) = epsilon;
+    odometry_plus = odometry_update(X+e_vec, j, odometry_pose, delta_ticks, delta_time);
+    odometry_minus = odometry_update(X-e_vec, j, odometry_pose, delta_ticks, delta_time);
+    J(i, :) = inv_eps2 * (odometry_plus - odometry_minus);
   endfor
 endfunction
 
-function [e, J] = ErrorAndJacobian(X, odometry_pose, tracker_pose)
-    R = X(1:2, 1:2);
-    t = X(1:2, 3);
-    z_hat = R*odometry_pose(1:2)' + t;
-    e = z_hat - tracker_pose(1:2)';
-
-    J = zeros(2, 3);
-    J(1:2, 1:2) = eye(2);
-    J(1:2, 3) = J_atan2(odometry_pose(1:2)');
-endfunction
-
-%plot functions
+#plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
   hold on;
   grid on;
@@ -181,7 +234,7 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
     line1 = plot(NaN, NaN, 'k-', 'linewidth', 2);
     line2 = plot(NaN, NaN, 'b-', 'linewidth', 2);
     line3 = plot(NaN, NaN, 'r-', 'linewidth', 2);
-    legend('Odometry', 'Tracker', 'Odometry estimated');
+    legend('Odometry pose', 'Tracker pose', 'Odometry estimated pose');
         
     for i = 1:size(odometry_pose, 1),
       if ishandle(h)
@@ -206,7 +259,7 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
     plot(odometry_pose(:, 1), odometry_pose(:, 2), 'r-', 'linewidth', 2);
 
-    legend('Odometry', 'Tracker', 'Odometry estimated');
+    legend('Odometry pose', 'Tracker pose', 'Odometry estimated pose');
     drawnow;
     try
       saveas(h, name_file);
@@ -218,7 +271,7 @@ function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, movin
   waitfor(h);
 endfunction
 
-function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
+function plot_odometry_error(model_pose, odometry_pose, h, time)
   hold on;
   grid on;
   title('2D error trajectory of the odometry estimated');
@@ -230,16 +283,70 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
 
   L2_norm = sqrt(sum(error_odometry.^2, 2));
 
+  name_file = "./output/error_odometry_estimated.png";
+  if exist(name_file, "file")
+    delete(name_file);
+  endif
+
+  plot(delta_time, L2_norm, 'g-', 'linewidth', 2);
+
+  legend('Odometry estimated: L2 Norm error');
+  drawnow;
+  try
+    saveas(h, name_file);
+  catch
+    disp("Plot closed before saving is completed");
+  end
+
+  printf('L2 Norm error: mean %f, min %f, max %f.\n', mean(L2_norm), min(L2_norm), max(L2_norm));
+  waitfor(h);
+endfunction
+
+function plot_chi_stats(chi_stats, h)
+  hold on;
+  grid on;
+  title('Chi stat');
+  xlabel('Iteration');
+  ylabel('Error');
+
+  name_file = "./output/chi_stat.png";
+  if exist(name_file, "file")
+    delete(name_file);
+  endif
+
+  plot(log(chi_stats(1, :) + 1), '-b', 'linewidth', 3)
+
+  legend('Chi stat');
+  drawnow;
+  try
+    saveas(h, name_file);
+  catch
+    disp("Plot closed before saving is completed");
+  end
+  
+  waitfor(h);
+endfunction
+
+function plot_odometry_calibration(odometry_calibration, tracker_pose, moving, h, delta_time)
+  hold on;
+  grid on;
+  title('2D trajectory of the odometry pose during calibration');
+  xlabel('x');
+  ylabel('y');
+  lim_offset = 2;
+  xlim([min(min(odometry_calibration(:, 1)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibration(:, 1)), max(tracker_pose(:, 1))) + lim_offset]);
+  ylim([min(min(odometry_calibration(:, 2)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibration(:, 2)), max(tracker_pose(:, 1))) + lim_offset]);
 
   if moving
-    line = plot(NaN, NaN, 'g-', 'linewidth', 2);
-    legend({'Odometry estimated: L2 Norm error'});
+    line1 = plot(NaN, NaN, 'r-', 'linewidth', 2);
+    line2 = plot(NaN, NaN, 'b-', 'linewidth', 2);
+    legend('Odometry pose during calibration', 'Tracker pose');
         
-    for i = 1:size(model_pose, 1),
+    for i = 1:size(odometry_calibration, 1),
       if ishandle(h)
-        set(line, 'XData', delta_time(1:i), 'YData', L2_norm(1:i));
+        set(line1, 'XData', odometry_calibration(1:i, 1), 'YData', odometry_calibration(1:i, 2));
+        set(line2, 'XData', tracker_pose(1:i, 1), 'YData', tracker_pose(1:i, 2));
 
-        printf('L2 Norm error at time %f is %f\n', time(i, 1), L2_norm(i));
         pause(delta_time(i));
         drawnow;
       else
@@ -248,14 +355,15 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
     endfor
 
   else
-    name_file = "./output/error_odometry_estimated.png";
+    name_file = "./output/odometry_calibration.png";
     if exist(name_file, "file")
         delete(name_file);
     endif
 
-    plot(delta_time, L2_norm, 'g-', 'linewidth', 2);
+    plot(odometry_calibration(:, 1), odometry_calibration(:, 2), 'r-', 'linewidth', 2);
+    plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
 
-    legend('Odometry estimated: L2 Norm error');
+    legend('Odometry during calibration', 'Tracker pose');
     drawnow;
     try
       saveas(h, name_file);
@@ -263,7 +371,54 @@ function plot_odometry_error(model_pose, odometry_pose, moving, h, time)
       disp("Plot closed before saving is completed");
     end
   endif
+    
+  waitfor(h);
+endfunction
 
-  printf('L2 Norm error: mean %f, min %f, max %f.\n', mean(L2_norm), min(L2_norm), max(L2_norm));
+function plot_odometry_calibrated(odometry_calibrated, tracker_pose, moving, h, delta_time)
+  hold on;
+  grid on;
+  title('2D trajectory of the odometry calibrated');
+  xlabel('x');
+  ylabel('y');
+  lim_offset = 2;
+  xlim([min(min(odometry_calibrated(:, 1)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibrated(:, 1)), max(tracker_pose(:, 1))) + lim_offset]);
+  ylim([min(min(odometry_calibrated(:, 2)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibrated(:, 2)), max(tracker_pose(:, 1))) + lim_offset]);
+
+  if moving
+    line1 = plot(NaN, NaN, 'r-', 'linewidth', 2);
+    line2 = plot(NaN, NaN, 'b-', 'linewidth', 2);
+    legend('Odometry calibrated pose', 'Tracker pose');
+        
+    for i = 1:size(odometry_calibrated, 1),
+      if ishandle(h)
+        set(line1, 'XData', odometry_calibrated(1:i, 1), 'YData', odometry_calibrated(1:i, 2));
+        set(line2, 'XData', tracker_pose(1:i, 1), 'YData', tracker_pose(1:i, 2));
+
+        pause(delta_time(i));
+        drawnow;
+      else
+        break;
+      endif
+    endfor
+
+  else
+    name_file = "./output/odometry_calibrated.png";
+    if exist(name_file, "file")
+        delete(name_file);
+    endif
+
+    plot(odometry_calibrated(:, 1), odometry_calibrated(:, 2), 'r-', 'linewidth', 2);
+    plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
+
+    legend('Odometry calibrated', 'Tracker pose');
+    drawnow;
+    try
+      saveas(h, name_file);
+    catch
+      disp("Plot closed before saving is completed");
+    end
+  endif
+    
   waitfor(h);
 endfunction

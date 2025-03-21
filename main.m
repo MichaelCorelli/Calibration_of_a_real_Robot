@@ -5,7 +5,7 @@ clc
 
 source "robot_calibration/calibration.m"
 
-#to observer the robot and sensor trajectories moving set: on
+#to observer the odometry and tracker trajectories moving, set: on
 args = argv();
 if length(args) > 0 && args{1} == 'on'
     moving = true;
@@ -37,7 +37,7 @@ max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
 
-%delta ticks
+#delta ticks
 delta_ticks = delta_ticks(ticks, max_encoder_value);
 
 #delta time
@@ -52,23 +52,30 @@ plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, del
 pause(1);
 
 #plot of odometry estimated: L2 Norm error
-plot_odometry_error(model_pose, odometry_pose, moving, h, time);
+plot_odometry_error(model_pose, odometry_pose, h, time);
 pause(1);
 
-%odometry calibration
-[X_result, chi_stats] = odometry_calibration(odometry_pose(:, 1:3), tracker_pose, 10);
+#odometry calibration
+n_iter = 10;
+chi_stats = zeros(1, n_iter);
+X_guess = x';
+[X_result, chi_stats(1, :),  inliers_stats(1, :), odometry_calibration] = odometry_calibration(X_guess, tracker_pose, delta_ticks, delta_time, n_iter);
 disp('X:')
 disp(X_result);
-disp('chi:')
+disp('chi stat:')
 disp(chi_stats);
 pause(1);
 
-%odometry calibrated
-odometry_calibrated = odometry_correction(X_result, odometry_pose(:, 1:3));
+plot_chi_stats(chi_stats, h);
+pause(1);
 
-%plot of calibrated odometry
-hold on;
-plot(odometry_calibrated(:,1), odometry_calibrated(:,2), 'b-', 'linewidth', 2);
-plot(tracker_pose(:,1), tracker_pose(:,2), 'r-', 'linewidth', 2);
-drawnow;
-waitfor(h);
+#plot of odometry during calibration
+plot_odometry_calibration(odometry_calibration, tracker_pose, moving, h, delta_time);
+pause(1);
+
+#odometry calibrated
+odometry_calibrated = odometry(X_result', delta_ticks, delta_time);
+
+#plot of calibrated odometry
+plot_odometry_calibrated(odometry_calibrated, tracker_pose, moving, h, delta_time);
+pause(1);
