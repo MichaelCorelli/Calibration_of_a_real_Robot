@@ -109,111 +109,86 @@ function X = boxplus(x1, x2)
 endfunction
 
 function X = boxminus(x1, x2)
-  X = t2v(x1*inv(x2));
+  X = t2v(inv(x2)*x1);
 endfunction
 
-function odometry = odometry_update(x, i, odometry_pose, delta_ticks, delta_time)
-  ksteer = x(1);
-  ktraction = x(2);
-  axis_length = x(3);
-  steer_offset = x(4);
-
-  #threshold for increments that are too small
-  alpha_x = 1e-5;
-  alpha_y = 1e-5;
-  alpha_th = 1e-4;
-  alpha_phi = 1e-4;
-  alpha = [alpha_x, alpha_y, alpha_th, alpha_phi];
-
-  ticks_steer = delta_ticks(i, 1);
-  ticks_traction = delta_ticks(i, 2);
-
-  v = (ktraction*ticks_traction);
-  dphi = (ksteer*ticks_steer) + steer_offset;
-
-  if i == 1
-    delta = [0, 0, 0, 0];
-  else
-    dx = v * cos(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
-    dy = v * sin(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
-    dth = v * (sin(odometry_pose(i-1, 4))/axis_length)*delta_time(i, 1);
-    dphi = dphi*delta_time(i, 1);
-
-    #noise
-    n = 0.00001;
-
-    delta = [dx, dy, dth, dphi] + n;
-
-    #skip increments that are too small
-    delta(abs(delta) < alpha) = 0;
-
-    if any(delta ~= 0)
-      delta = odometry_pose(i-1, :) + delta;
-    else
-      delta = odometry_pose(i-1, :);
-    endif
-  endif
-  odometry = delta;
-endfunction
-
-function [X, chi_stats, n_inliers, odometry_calibration] = odometry_calibration(X, tracker_pose, delta_ticks, delta_time, n_iter)
-
+function [X, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter)
   chi_stats = zeros(1, n_iter);
   n_inliers = zeros(1, n_iter);
-  threshold_kernel = 1e-4;
-  damping = 1;
-  odometry_pose = zeros(size(delta_ticks, 1), 4);
-
+  threshold_kernel = 1e10;
+  damping = 0;
+  X = eye(3);
+  
   for i = 1:n_iter
     H = zeros(length(X), length(X));
     b = zeros(length(X), 1);
     chi_stats(i) = 0;
-
+    
     for j = 1:size(tracker_pose, 1)
-      [e, J, odometry] = ErrorAndJacobian(X, j, odometry_pose, tracker_pose, delta_ticks, delta_time);
-      odometry_pose(j, :) = odometry;
+      [e, J] = ErrorAndJacobian(X, odometry_pose(j, :), tracker_pose(j, :));
       chi = e'*e;
-
+      
       if (chi > threshold_kernel)
         e = e*sqrt(threshold_kernel/chi);
         chi = threshold_kernel;
       else
         n_inliers(i)++;
       endif
-
+      
       chi_stats(i) = chi_stats(i) + chi;
       H = H + J' * J;
       b = b + J' * e;
     endfor
-    H = H + eye(4)*damping;
+    H = H + eye(3) * damping;
 
     dx = -H\b;
-    X = X + dx;
-    fprintf('Iteration %d: X = [%f, %f, %f, %f] and chi stat = %f\n', i, X(1), X(2), X(3), X(4), chi_stats(i));
+    X = boxplus(X, dx);
+    fprintf('Iteration %d: chi stat = %f\n', i, chi_stats(i));
   endfor
-  odometry_calibration = odometry_pose;
 endfunction
 
-function [e, J, odometry] = ErrorAndJacobian(X, j, odometry_pose, tracker_pose, delta_ticks, delta_time)
-  odometry = odometry_update(X, j, odometry_pose, delta_ticks, delta_time);
-  pred = v2t(odometry);
-  meas = v2t(tracker_pose(j, :));
-
+function [e, J] = ErrorAndJacobian(X, odometry_pose, tracker_pose)
+  pred = X*v2t(odometry_pose(1:3)');
+  meas = v2t(tracker_pose');
+  
   e = boxminus(meas, pred);
-    
+  
   epsilon = 1e-4;
   inv_eps2= 0.5/epsilon;
-  n = length(X);
-  J = zeros(3, n);
-
-  for i = 1:size(J, 1)
+  J = zeros(3, 3);
+  
+  for i = 1:length(X)
     e_vec = zeros(length(X), 1);
     e_vec(i) = epsilon;
-    odometry_plus = odometry_update(X+e_vec, j, odometry_pose, delta_ticks, delta_time);
-    odometry_minus = odometry_update(X-e_vec, j, odometry_pose, delta_ticks, delta_time);
-    J(i, :) = inv_eps2 * (odometry_plus - odometry_minus);
+
+    odometry_plus  = boxplus(X, e_vec);
+    odometry_minus = boxplus(X, -e_vec);
+    
+    J(:, i) = inv_eps2*boxminus(odometry_minus, odometry_plus);
   endfor
 endfunction
+
+%{
+function [e, J] = ErrorAndJacobian(X, odometry_pose, tracker_pose)
+  t = X(1:2,3);
+  R = X(1:2,1:2);
+  pred = R*odometry_pose(1:2)' + t;
+  e = pred - tracker_pose(1:2)';
+
+  J = zeros(2, 3);
+  J(1:2, 1:2) = eye(2);
+  J(1:2, 3) = [-pred(2), pred(1)]';
+endfunction
+%}
+
+function odometry_corrected = odometry_correction(X_result, odometry_pose)
+	odometry_corrected = zeros(size(odometry_pose, 1), 3);
+	for i = 1:size(odometry_pose, 1)
+		u = odometry_pose(i, 1:3)';
+		uc = X_result*u;
+		odometry_corrected(i, :) = uc;
+	end
+end
 
 #plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
@@ -324,54 +299,6 @@ function plot_chi_stats(chi_stats, h)
     disp("Plot closed before saving is completed");
   end
   
-  waitfor(h);
-endfunction
-
-function plot_odometry_calibration(odometry_calibration, tracker_pose, moving, h, delta_time)
-  hold on;
-  grid on;
-  title('2D trajectory of the odometry pose during calibration');
-  xlabel('x');
-  ylabel('y');
-  lim_offset = 2;
-  xlim([min(min(odometry_calibration(:, 1)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibration(:, 1)), max(tracker_pose(:, 1))) + lim_offset]);
-  ylim([min(min(odometry_calibration(:, 2)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibration(:, 2)), max(tracker_pose(:, 1))) + lim_offset]);
-
-  if moving
-    line1 = plot(NaN, NaN, 'r-', 'linewidth', 2);
-    line2 = plot(NaN, NaN, 'b-', 'linewidth', 2);
-    legend('Odometry pose during calibration', 'Tracker pose');
-        
-    for i = 1:size(odometry_calibration, 1),
-      if ishandle(h)
-        set(line1, 'XData', odometry_calibration(1:i, 1), 'YData', odometry_calibration(1:i, 2));
-        set(line2, 'XData', tracker_pose(1:i, 1), 'YData', tracker_pose(1:i, 2));
-
-        pause(delta_time(i));
-        drawnow;
-      else
-        break;
-      endif
-    endfor
-
-  else
-    name_file = "./output/odometry_calibration.png";
-    if exist(name_file, "file")
-        delete(name_file);
-    endif
-
-    plot(odometry_calibration(:, 1), odometry_calibration(:, 2), 'r-', 'linewidth', 2);
-    plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
-
-    legend('Odometry during calibration', 'Tracker pose');
-    drawnow;
-    try
-      saveas(h, name_file);
-    catch
-      disp("Plot closed before saving is completed");
-    end
-  endif
-    
   waitfor(h);
 endfunction
 
