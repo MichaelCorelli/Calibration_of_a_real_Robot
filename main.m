@@ -55,23 +55,25 @@ pause(1);
 plot_odometry_error(model_pose, odometry_pose, h, time);
 pause(1);
 
-#odometry calibration
-n_iter = 25;
-chi_stats = zeros(1, n_iter);
-[X_result, chi_stats(1, :),  inliers_stats(1, :)] = odometry_calibration(odometry_pose, tracker_pose, n_iter);
+tracker_pose = correction_tracker_pose(tracker_pose);
+odometry_pose = odometry_pose(:, 1:3);
+n_iter = 100;
+[X, chi_stats] = odometry_calibration(odometry_pose, tracker_pose, n_iter);
 disp('X:')
-disp(X_result);
+disp(X);
 disp('chi stat:')
 disp(chi_stats);
 pause(1);
 
-#plot of chi stat
 plot_chi_stats(chi_stats, h);
 pause(1);
 
-#odoemtry correction
-odometry_corrected = odometry_correction(X_result, odometry_pose(:, 1:3));
+odometry_corrected = odometry_correction(X, odometry_pose);
 
 #plot of calibrated odometry
 plot_odometry_calibrated(odometry_corrected, tracker_pose, moving, h, delta_time);
+pause(1);
+
+#plot of odometry estimated: L2 Norm error
+plot_odometry_calibrated_error(odometry_corrected, tracker_pose, h, time);
 pause(1);
