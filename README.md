@@ -79,7 +79,7 @@ Different thresholds are applied to $x$, $y$, $\theta$, and $\phi$ during the es
 The plot shows that the estimated trajectory closely follows the ground truth of the odometry pose.
 
 ### L2 norm error of odometry estimated:
-![L2_error_trajectory](./output/error_odometry_calibrated.png)
+![L2_error_trajectory](./output/error_odometry_estimated.png)
 This plot illustrates the L2 norm error over the trajectory. Two kinematic models were compared during the trajectory estimation:
 - realistic model: $dx = v * cos(\theta)*cos(\phi)*\Delta t$ and $dy = v * sin(\theta)*cos(\phi)*\Delta t$
 - simplified model: $dx = v * cos(\theta) * \Delta t$ and $dy = v * sin(\theta) * \Delta t$

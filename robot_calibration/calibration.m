@@ -96,14 +96,14 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
   endfor
 endfunction
 
-function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian)
+function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type)
 
   odometry_inc = new_pose(odometry_pose);
   tracker_inc  = new_pose(tracker_pose);
 
   state = [reshape(eye(3) + 0.001 * randn(3), [], 1); 1.5; 0; 1];
   threshold = 0.0000198;
-  c = 1e-9;
+  c = 0.000000002;
   d = 1.2;
 
   chi_stats = zeros(1, n_iter);
@@ -113,7 +113,7 @@ function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometr
   max_step = 3;
 
   for i = 1:n_iter
-    [H, b, chi, inliers] = linear_s(state, odometry_inc, tracker_inc, threshold, jacobian);
+    [H, b, chi, inliers] = linear_s(state, odometry_inc, tracker_inc, threshold, jacobian_type);
     n_inliers(i) = inliers;
 
     lambda = c * max(diag(H));
@@ -136,7 +136,7 @@ function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometr
 
     chi_stats(i) = chi;
     laser_params = state(end-2:end);
-    fprintf('Iteration %d: chi = %.2e, inliers = %d, laser=[%.3f,%.3f,%.3f]\n', i, chi, inliers, laser_params);
+    fprintf('Iteration %d: chi = %.2e, inliers = %d, laser = [%.3f,%.3f,%.3f]\n', i, chi, inliers, laser_params);
 
     if norm(d_state) < 1e-7 && i > 1 && abs(chi_stats(i) - chi_stats(i-1)) < 1e-7
       fprintf('Converged at iter %d: chi = %.6e\n', i, chi);
@@ -153,7 +153,7 @@ function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometr
   laser_f = state(end-2:end);
 endfunction
 
-function [H, b, chi, inliers] = linear_s(state, odom_inc, tracker_inc, threshold, jacobian)
+function [H, b, chi, inliers] = linear_s(state, odom_inc, tracker_inc, threshold, jacobian_type)
   H = zeros(length(state)); b = zeros(length(state), 1);
   chi = 0; inliers = 0;
 
@@ -163,7 +163,7 @@ function [H, b, chi, inliers] = linear_s(state, odom_inc, tracker_inc, threshold
     z = tracker_inc(i,:)';
     e = error(state, u, z);
 
-    if jacobian
+    if jacobian_type
       J = Jacobian_numerical(@(s) error(s, u, z), state, 1e-5);
     else
       J = Jacobian_analytical(state, u, z);

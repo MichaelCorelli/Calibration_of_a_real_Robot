@@ -46,19 +46,18 @@ delta_time = delta_time(time);
 #odometry of front-tractor tricycle
 x_initial = [Ksteer, Ktraction, axis_length, steer_offset];
 odometry_pose = odometry(x_initial, delta_ticks, delta_time);
-
+%{
 #plot of: odometry, tracker and odometry estimated
 plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time);
 pause(1);
-
 #plot of odometry estimated: L2 Norm error
 plot_odometry_error(model_pose, odometry_pose, h, time);
 pause(1);
-
+%}
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 30;
-
-[X, laser_params, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, true);
+n_iter = 25;
+jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
+[X, laser_params, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
 disp('Correction matrix X:')
 disp(X);
