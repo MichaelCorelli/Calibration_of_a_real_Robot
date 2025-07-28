@@ -101,7 +101,7 @@ function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometr
   odometry_inc = new_pose(odometry_pose);
   tracker_inc  = new_pose(tracker_pose);
 
-  state = [reshape(eye(3) + 0.001 * randn(3), [], 1); 1.5; 0; 1];
+  state = [reshape(eye(3), [], 1); 1.5; 0; 1];
   threshold = 0.0000198;
   c = 0.000000002;
   d = 1.2;

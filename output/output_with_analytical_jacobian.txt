@@ -1,0 +1,81 @@
+Loading the dataset
+Dataset loaded
+L2 Norm error: mean 0.079684, min 0.000000, max 0.172628.
+Iteration 1: chi = 4.66e-02, inliers = 101, laser = [0.897,0.352,1.000]
+Iteration 2: chi = 4.62e-02, inliers = 148, laser = [0.040,0.666,1.000]
+Iteration 3: chi = 4.55e-02, inliers = 198, laser = [-0.525,0.926,0.999]
+Iteration 4: chi = 4.46e-02, inliers = 302, laser = [-0.854,0.954,0.999]
+Iteration 5: chi = 4.38e-02, inliers = 390, laser = [-1.073,0.851,0.999]
+Iteration 6: chi = 4.35e-02, inliers = 474, laser = [-1.184,0.691,0.999]
+Iteration 7: chi = 4.33e-02, inliers = 512, laser = [-1.221,0.520,0.999]
+Iteration 8: chi = 4.31e-02, inliers = 523, laser = [-1.228,0.356,0.999]
+Iteration 9: chi = 4.30e-02, inliers = 533, laser = [-1.224,0.197,0.999]
+Iteration 10: chi = 4.29e-02, inliers = 547, laser = [-1.224,0.057,0.999]
+Iteration 11: chi = 4.28e-02, inliers = 549, laser = [-1.229,-0.070,0.999]
+Iteration 12: chi = 4.28e-02, inliers = 554, laser = [-1.239,-0.183,0.998]
+Iteration 13: chi = 4.27e-02, inliers = 561, laser = [-1.252,-0.273,0.998]
+Iteration 14: chi = 4.27e-02, inliers = 563, laser = [-1.266,-0.339,0.998]
+Iteration 15: chi = 4.27e-02, inliers = 572, laser = [-1.280,-0.385,0.998]
+Iter 16: step refused, c = 1.557731e-10
+Iteration 16: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Iter 17: step refused, c = 1.869278e-10
+Iteration 17: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Iter 18: step refused, c = 2.243133e-10
+Iteration 18: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Stopping at iter 18: chi = 4.266616e-02
+Correction matrix X:
+   3.6021e-01   3.3140e+01   3.5827e+00
+  -5.5232e-01  -4.0228e+01  -9.6537e-01
+  -1.8905e-02  -8.7996e+00   4.9056e+00
+Laser calibrated parameters [x, y, theta]:
+x: -1.2803 m
+y: -0.3847 m
+theta: 0.9982 rad (57.19 degrees)
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.046589   0.046243   0.045531   0.044572   0.043800   0.043461   0.043297
+
+ Columns 8 through 14:
+
+   0.043142   0.043023   0.042916   0.042838   0.042774   0.042715   0.042690
+
+ Columns 15 through 18:
+
+   0.042666   0.042666   0.042666   0.042666
+
+Laser changes:
+Initial values: x = 1.500, y = 0.000, theta = 1.000
+Calibrated values: x = -1.280, y = -0.385, theta = 0.998
+
+Calibration results
+Mean error before calibration: 14.5470 m
+Mean error after calibration: 0.9225 m
+Improvement: 13.6246 m (93.7%)
+L2 Norm error: mean 0.662266, min 0.001601, max 1.559847.
+2D position of the sensor w.r.t. the base link
+x: -1.2803 m
+y: -0.3847 m
+theta: 0.9982 rad (57.19 degrees)
+
+Kinematic calibrated parameters
+ksteer: 0.490559 rad/tick (initial value: 0.100000)
+ktraction: 0.426997 m/tick (initial value: 0.010614)
+steer offset: 0.000000 rad (initial value: 0.000000)
+base line: 1.4000 m (initial value: 1.4000)
+
+Analysis on correction matrix X
+X:
+   3.6021e-01   3.3140e+01   3.5827e+00
+  -5.5232e-01  -4.0228e+01  -9.6537e-01
+  -1.8905e-02  -8.7996e+00   4.9056e+00
+
+Scale factor x: 0.3602 (-64.0%)
+Scale factor y: -40.2276 (-4122.8%)
+Scale factor theta: 4.9056 (390.6%)
+Cross-coupling xy: 33.139730
+Cross-coupling yx: -0.552323
+
+Calibration verification
+Error improvement: 93.7%
+Final Chi-square: 4.266616e-02

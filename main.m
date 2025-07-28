@@ -23,6 +23,7 @@ Ktraction = 0.0106141;
 axis_length = 1.4;
 steer_offset = 0;
 
+diary('./output/output.txt'); #to save the output
 #load the dataset and split the data in variables: time, ticks, model_pose and tracker_pose
 disp('Loading the dataset');
 
@@ -46,16 +47,16 @@ delta_time = delta_time(time);
 #odometry of front-tractor tricycle
 x_initial = [Ksteer, Ktraction, axis_length, steer_offset];
 odometry_pose = odometry(x_initial, delta_ticks, delta_time);
-%{
+
 #plot of: odometry, tracker and odometry estimated
 plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time);
 pause(1);
 #plot of odometry estimated: L2 Norm error
 plot_odometry_error(model_pose, odometry_pose, h, time);
 pause(1);
-%}
+
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 25;
+n_iter = 18;
 jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
 [X, laser_params, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
@@ -119,9 +120,10 @@ disp(X);
 fprintf('\nScale factor x: %.4f (%.1f%%)\n', X(1,1), (X(1,1)-1)*100);
 fprintf('Scale factor y: %.4f (%.1f%%)\n', X(2,2), (X(2,2)-1)*100);
 fprintf('Scale factor theta: %.4f (%.1f%%)\n', X(3,3), (X(3,3)-1)*100);
-fprintf('Cross-coupling XY: %.6f\n', X(1,2));
-fprintf('Cross-coupling YX: %.6f\n', X(2,1));
+fprintf('Cross-coupling xy: %.6f\n', X(1,2));
+fprintf('Cross-coupling yx: %.6f\n', X(2,1));
 
 fprintf('\nCalibration verification\n');
 fprintf('Error improvement: %.1f%%\n', (error_before - error_after) / error_before * 100);
 fprintf('Final Chi-square: %.6e\n', chi_stats(end));
+diary off;
