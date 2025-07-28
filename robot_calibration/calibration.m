@@ -68,8 +68,11 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
     if i == 1
       delta = [0, 0, 0, 0];
     else
-      dx = v * cos(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
-      dy = v * sin(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+      #dx = v * cos(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+      #dy = v * sin(odometry_pose(i-1, 3))*cos(odometry_pose(i-1, 4))*delta_time(i, 1);
+
+      dx = v * cos(odometry_pose(i-1, 3)) * delta_time(i, 1);
+      dy = v * sin(odometry_pose(i-1, 3)) * delta_time(i, 1);
       dth = v * (sin(odometry_pose(i-1, 4))/axis_length)*delta_time(i, 1);
       dth = mod(dth + pi, 2*pi) - pi;
       dphi = dphi*delta_time(i, 1);
@@ -93,245 +96,192 @@ function odometry_pose = odometry(x, delta_ticks, delta_time)
   endfor
 endfunction
 
-function A = v2t(v)
-  c = cos(v(3));
-  s = sin(v(3));
-  A = [c, -s, v(1);
-       s,  c, v(2);
-       0,  0,   1];
-end
+function [X_final, laser_f, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian)
 
-function v = t2v(A)
-  v = [A(1, 3);
-       A(2, 3); 
-       atan2(A(2, 1), A(1, 1))];
-end
+  odometry_inc = new_pose(odometry_pose);
+  tracker_inc  = new_pose(tracker_pose);
 
-function tracker_pose_corrected = correction_tracker_pose(tracker_pose)
-  laser = [cos(1), -sin(1), 1.5;
-           sin(1),  cos(1),   0;
-                0,       0,   1];
+  state = [reshape(eye(3) + 0.001 * randn(3), [], 1); 1.5; 0; 1];
+  threshold = 0.0000198;
+  c = 1e-9;
+  d = 1.2;
 
-  tracker_pose_corrected = zeros(size(tracker_pose));
-  for i = 1:size(tracker_pose, 1)
-    tracker = v2t(tracker_pose(i, :)');
-    correction = inv(laser) * tracker * laser;
-    tracker_pose_corrected(i, :) = t2v(correction)';
-  end
-end
+  chi_stats = zeros(1, n_iter);
+  n_inliers = zeros(1, n_iter);
+  min_chi = inf;
+  n_count = 0;
+  max_step = 3;
 
-function new = new_pose(pose)
-  new = zeros(size(pose, 1) - 1, 3);
+  for i = 1:n_iter
+    [H, b, chi, inliers] = linear_s(state, odometry_inc, tracker_inc, threshold, jacobian);
+    n_inliers(i) = inliers;
 
-  for i = 1:size(pose, 1) - 1
-    v = t2v(inv(v2t(pose(i,:)')) * v2t(pose(i + 1,:)'));
-    v(3) = mod(v(3) + pi, 2*pi) - pi;
-    new(i, :) = v';
-  end
-end
+    lambda = c * max(diag(H));
+    d_state = - (H + lambda * eye(length(state))) \ b;
+    state_new = state + d_state;
 
-function odometry_corrected = odometry_correction(X, odometry_pose)
+    chi_new = chi_tot(state_new, odometry_inc, tracker_inc, threshold);
+
+    if chi_new < chi
+      state = state_new;
+      chi = chi_new;
+      c = c / d;
+      n_count = (chi < min_chi) * 0 + (chi >= min_chi) * (n_count + 1);
+      min_chi = min(min_chi, chi);
+    else
+      c = c * d;
+      n_count = n_count + 1;
+      fprintf('Iter %d: step refused, c = %e\n', i, c);
+    endif
+
+    chi_stats(i) = chi;
+    laser_params = state(end-2:end);
+    fprintf('Iteration %d: chi = %.2e, inliers = %d, laser=[%.3f,%.3f,%.3f]\n', i, chi, inliers, laser_params);
+
+    if norm(d_state) < 1e-7 && i > 1 && abs(chi_stats(i) - chi_stats(i-1)) < 1e-7
+      fprintf('Converged at iter %d: chi = %.6e\n', i, chi);
+      break;
+
+    elseif n_count >= max_step && i > 10
+      fprintf('Stopping at iter %d: chi = %.6e\n', i, chi);
+      break;
+
+    endif
+  endfor
+
+  X_final = reshape(state(1:9), 3, 3);
+  laser_f = state(end-2:end);
+endfunction
+
+function [H, b, chi, inliers] = linear_s(state, odom_inc, tracker_inc, threshold, jacobian)
+  H = zeros(length(state)); b = zeros(length(state), 1);
+  chi = 0; inliers = 0;
+
+  for i = 1:size(odom_inc, 1)
+
+    u = odom_inc(i,:)';
+    z = tracker_inc(i,:)';
+    e = error(state, u, z);
+
+    if jacobian
+      J = Jacobian_numerical(@(s) error(s, u, z), state, 1e-5);
+    else
+      J = Jacobian_analytical(state, u, z);
+    endif
+
+    r = e' * e;
+
+    if r <= threshold
+      w = 1; inliers = inliers + 1;
+    else
+      w = threshold/r;
+    endif
+
+    e = e*w;
+    J = J*w;
+    chi = chi + min(r, threshold);
+    H = H + J'*J;
+    b = b + J'*e;
+  endfor
+endfunction
+
+function e = error(state, u, z)
+  X = reshape(state(1:9), 3, 3);
+  x_laser = state(10);
+  y_laser = state(11);
+  theta_laser = state(12);
+    
+  c = cos(theta_laser);
+  s = sin(theta_laser);
+  laser = [c, -s, x_laser;
+           s,  c, y_laser;
+           0,  0,       1];
+
+  e = t2v(inv(laser) * v2t(z) * laser) - X * u;
+  e(3) = mod(e(3) + pi, 2*pi) - pi;
+endfunction
+
+function J = Jacobian_numerical(f, state, d)
+  n = numel(state);
+  J = zeros(numel(f(state)), n);
+    
+  for k = 1:n
+      state_p = state;
+      state_m = state;
+      state_p(k) = state_p(k) + d;
+      state_m(k) = state_m(k) - d;
+        
+      J(:, k) = (f(state_p) - f(state_m))/(2 * d);
+  endfor
+endfunction
+
+function J = Jacobian_analytical(state, u, z)
+
+  X = reshape(state(1:9), 3, 3);
+  x_laser = state(10);
+  y_laser = state(11);
+  theta_laser = state(12);
+    
+  c = cos(theta_laser);
+  s = sin(theta_laser);
+
+  laser = [c, -s, x_laser; 
+           s,  c, y_laser; 
+           0,  0,       1];
+
+  dlaser_x = [0, 0, 1; 
+               0, 0, 0;
+               0, 0, 0];
+  dlaser_y = [0, 0, 0;
+               0, 0, 1;
+               0, 0, 0];
+  dlaser_theta = [-s, -c, 0;
+                    c, -s, 0;
+                    0, 0,  0];
+
+  J = zeros(3, 12);
+  J(:, 1:3) = -u(1) * eye(3);
+  J(:, 4:6) = -u(2) * eye(3);
+  J(:, 7:9) = -u(3) * eye(3);
+    
+  J(:, 10) = t2v((-inv(laser) * dlaser_x * inv(laser)) * v2t(z) * laser + (inv(laser) * v2t(z) * dlaser_x));
+  J(:, 11) = t2v((-inv(laser) * dlaser_y * inv(laser)) * v2t(z) * laser + (inv(laser) * v2t(z) * dlaser_y));
+  J(:, 12) = t2v((-inv(laser) * dlaser_theta * inv(laser)) * v2t(z) * laser + (inv(laser) * v2t(z) * dlaser_theta));
+endfunction
+
+function odometry_corrected = odometry_correction(X, laser_params, odometry_pose)
+
   odometry_corrected = zeros(size(odometry_pose, 1), 3);
   odometry_corrected(1, :) = odometry_pose(1, :);
   new_odometry_pose = new_pose(odometry_pose);
 
   for i = 1:size(new_odometry_pose, 1)
     u = new_odometry_pose(i, :)';
-    uc = X*u;
+    uc = X * u;
     uc(3) = mod(uc(3) + pi, 2*pi) - pi;
+    odometry_corrected(i + 1, :) = t2v((v2t(odometry_corrected(i, :)') * v2t(uc)))';
+  endfor
+endfunction
 
-    odometry_corrected(i + 1, :) = t2v((v2t(odometry_corrected(i, :)')*v2t(uc)))';
-  end
-end
+function odometry_corrected_tracker = to_tracker_frame(odometry_corrected, laser_params)
+  x_laser = laser_params(1);
+  y_laser = laser_params(2);
+  theta_laser = laser_params(3);
+  
+  c = cos(theta_laser);
+  s = sin(theta_laser);
+  laser = [c, -s, x_laser;
+           s,  c, y_laser;
+           0,  0,      1];
 
-#Analitic Jacobian
-function [X_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter)
-  odometry_pose = new_pose(odometry_pose);
-  tracker_pose  = new_pose(tracker_pose);
+  odometry_corrected_tracker = zeros(size(odometry_corrected));
 
-  chi_stats = zeros(1, n_iter);
-  n_inliers = zeros(1, n_iter);
-  threshold = 0.00001;
-  c = 0.0001;
-  nu = 1.2;
-
-  X = eye(3);
-
-  for i = 1:n_iter
-
-    H = zeros(9,9);
-    b = zeros(9,1);
-    chi = 0;
-    inliers = 0;
-
-    for j = 1:size(tracker_pose,1)
-      [e, J] = ErrorAndJacobian(X, odometry_pose(j,:)', tracker_pose(j,:)');
-      r = e' * e;
-
-      if r <= threshold
-        w = 1;
-        inliers = inliers + 1;
-      else
-        w = sqrt(threshold / r);
-      end
-
-      e = e * w;
-      J = J * w;
-      chi = chi + (e' * e);
-
-      H = H + J' * J;
-      b = b + J' * e;
-    end
-
-    n_inliers(i) = inliers;
-
-    deltaX = - (H + c * eye(9)) \ b;
-    X_1 = X + reshape((deltaX), 3, 3);
-
-    chi_1 = 0;
-    for k = 1:size(odometry_pose,1)
-      [e_k, ~] = ErrorAndJacobian(X_1, odometry_pose(k,:)', tracker_pose(k,:)');
-      r_k = e_k' * e_k;
-      if r_k <= threshold
-        chi_1 = chi_1 + r_k;
-      else
-        chi_1 = chi_1 + threshold;
-      end
-    end
-
-    if chi_1 < chi
-      X = X_1;
-      chi = chi_1;
-      c = c / nu;
-    else
-      c = c * nu;
-      fprintf('Iter %d: step refused\n', i);
-    end
-
-    chi_stats(i) = chi;
-    fprintf('Iteration %d: chi = %e, inliers = %d, c = %e\n', i, chi, inliers, c);
-
-    if norm(deltaX) < 1e-6 && (i>1 && abs(chi_stats(i)-chi_stats(i-1))<1e-6)
-      fprintf('Converged at iter %d: chi = %.6e\n', i, chi);
-      break;
-    end
-  end
-
-  X_final = X;
-end
-
-function [e, J] = ErrorAndJacobian(X, odometry_pose, tracker_pose)
-  e = tracker_pose - X * odometry_pose;
-  e(3) = mod(e(3) + pi, 2*pi) - pi;
-
-  J = zeros(3, 9);
-  J(:, 1:3) = -odometry_pose(1) * eye(3);
-  J(:, 4:6) = -odometry_pose(2) * eye(3);
-  J(:, 7:9) = -odometry_pose(3) * eye(3);
-end
-
-#Numerical Jacobian
-%{
-function [X_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter)
-  odometry_inc = new_pose(odometry_pose);
-  tracker_inc  = new_pose(tracker_pose);
-
-  chi_stats = zeros(1, n_iter);
-  n_inliers = zeros(1, n_iter);
-  threshold = 0.00001;
-  c = 0.00001;
-  nu = 1.2;
-
-  X = eye(3);
-  x = reshape(X, 9, 1);
-
-  for i = 1:n_iter
-    H   = zeros(9,9);
-    b   = zeros(9,1);
-    chi = 0;
-    inliers = 0;
-
-    for j = 1:size(odometry_inc,1)
-      u = odometry_inc(j, :)';
-      z = tracker_inc(j, :)';
-
-      e = err_fun(x, u, z);
-      J = J_numerical(@(xx) err_fun(xx, u, z), x, 1e-5);
-
-      r = e' * e;
-      if r <= threshold
-        w = 1;
-        inliers = inliers + 1;
-      else
-        w = sqrt(threshold / r);
-      end
-
-      e = e * w;
-      J = J * w;
-      chi = chi + (e' * e);
-
-      H = H + J' * J;
-      b = b + J' * e;
-    end
-
-    n_inliers(i) = inliers;
-
-    d_x = - (H + c * eye(9)) \ b;
-
-    x_1 = x + d_x;
-    X_1 = reshape(x_1, 3, 3);
-
-    chi_1 = 0;
-    for k = 1:size(odometry_inc,1)
-      u = odometry_inc(k, :)';
-      z = tracker_inc(k, :)';
-      ek = err_fun(x_1, u, z);
-      rk = ek' * ek;
-      if rk <= threshold
-        chi_1 = chi_1 + rk;
-      else
-        chi_1 = chi_1 + threshold;
-      end
-    end
-
-    if chi_1 < chi
-      x = x_1;
-      X = X_1;
-      chi = chi_1;
-      c = c / nu;
-    else
-      c = c * nu;
-      fprintf('Iter %d: step refused\n', i);
-    end
-
-    chi_stats(i) = chi;
-    fprintf('Iteration %d: chi = %e, inliers = %d, c = %e\n', i, chi, inliers, c);
-
-    if norm(d_x) < 1e-6 && (i>1 && abs(chi_stats(i)-chi_stats(i-1))<1e-6)
-      fprintf('Converged at iter %d: chi = %.6e\n', i, chi);
-      break;
-    end
-  end
-
-  X_final = X;
-end
-
-function e = err_fun(x, u, z)
-  X = reshape(x, 3, 3);
-  e = z - X * u;
-  e(3) = mod(e(3) + pi, 2*pi) - pi;
-end
-
-function J = J_numerical(fun, x, d)
-  n = numel(x);
-  f_0 = fun(x);
-  J = zeros(numel(f_0), n);
-  I = eye(n);
-  for k = 1:n
-    J(:,k) = (fun(x + d*I(:,k)) - fun(x - d*I(:,k))) / (2 * d);
-  end
-end
-%}
+  for i = 1:size(odometry_corrected, 1)
+    T = v2t(odometry_corrected(i, :)');
+    T_corrected = laser * T * inv(laser);
+    odometry_corrected_tracker(i, :) = t2v(T_corrected)';
+  endfor
+endfunction
 
 #plot functions
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
@@ -521,5 +471,38 @@ function plot_odometry_calibrated_error(tracker_pose, odometry_calibrated, h, ti
   end
 
   printf('L2 Norm error: mean %f, min %f, max %f.\n', mean(L2_norm), min(L2_norm), max(L2_norm));
+  waitfor(h);
+endfunction
+
+
+function plot_theta_calibrated(tracker_pose, odometry_calibrated, h, time)
+  hold on;
+  grid on;
+  title('Real \theta vs Calibrated \theta');
+  xlabel('seconds');
+  ylabel('\theta [rad]');
+
+  delta_time = time - time(1);
+
+  theta_tracker = tracker_pose(:, 3);
+  theta_odometry = odometry_calibrated(:, 3);
+
+  plot(delta_time, theta_tracker, 'r-', 'LineWidth', 2);
+  plot(delta_time, theta_odometry, 'b--', 'LineWidth', 2);
+
+  legend('Real \theta laser', 'Calibrated \theta laser');
+  drawnow;
+
+  name_file = "./output/theta_calibrated.png";
+  if exist(name_file, "file")
+    delete(name_file);
+  endif
+
+  try
+    saveas(h, name_file);
+  catch
+    disp("Plot closed before saving is completed");
+  end
+
   waitfor(h);
 endfunction
