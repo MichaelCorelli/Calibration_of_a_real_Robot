@@ -96,7 +96,7 @@ This plot illustrates the L2 norm error over the trajectory. Two kinematic model
 - simplified model: $dx = v * cos(\theta) * \Delta t$ and $dy = v * sin(\theta) * \Delta t$
 
 For $d\theta$ and $d\phi$ were used the same equations:
-- $d\theta = v * (sin(d\phi) / \text{axis\_length}) * \Delta t$
+- $d\theta = v * (sin(d\phi) / l) * \Delta t$, where $l$ is the axis length
 - $d\phi = d\phi * \Delta t$
 
 Surprisingly, the simplified model produced better performance. This is likely due to the fact that, in real-world conditions, the simplified model:
