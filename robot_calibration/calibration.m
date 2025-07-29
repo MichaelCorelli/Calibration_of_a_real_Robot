@@ -230,14 +230,14 @@ function J = Jacobian_analytical(state, u, z)
            0,  0,       1];
 
   dlaser_x = [0, 0, 1; 
-               0, 0, 0;
-               0, 0, 0];
+              0, 0, 0;
+              0, 0, 0];
   dlaser_y = [0, 0, 0;
-               0, 0, 1;
-               0, 0, 0];
+              0, 0, 1;
+              0, 0, 0];
   dlaser_theta = [-s, -c, 0;
-                    c, -s, 0;
-                    0, 0,  0];
+                   c, -s, 0;
+                   0, 0,  0];
 
   J = zeros(3, 12);
   J(:, 1:3) = -u(1) * eye(3);

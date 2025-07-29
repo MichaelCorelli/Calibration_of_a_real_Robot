@@ -55,9 +55,10 @@ pause(1);
 plot_odometry_error(model_pose, odometry_pose, h, time);
 pause(1);
 
+#start calibration
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 18;
-jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
+n_iter = 30;
+jacobian_type = true; #set true for numerical jacobian and false for analytical jacobian
 [X, laser_params, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
 disp('Correction matrix X:')
@@ -77,12 +78,13 @@ pause(1);
 plot_chi_stats(chi_stats, h);
 pause(1);
 
+#errors
 odometry_corrected = odometry_correction(X, laser_params, odometry_pose);
 error_before = mean(vecnorm(tracker_pose - odometry_pose(:, 1:3), 2, 2));
-
 odometry_corrected = to_tracker_frame(odometry_corrected, laser_params);
 error_after = mean(vecnorm(tracker_pose - odometry_corrected(:, 1:3), 2, 2));
 
+#results
 fprintf('\nCalibration results\n');
 fprintf('Mean error before calibration: %.4f m\n', error_before);
 fprintf('Mean error after calibration: %.4f m\n', error_after);
