@@ -74,8 +74,8 @@ The odometry function performs the following:
 
 ### Odometry trajectory
 <p align="center">
-  <img src="./output/odometry_estimated_simplified_model.png" alt = "odometry trajectory" width = "450"/>
-  <img src="./output/odometry_estimated_realistic_model.png" alt = "odometry trajectory" width = "450"/>
+  <img src="./output/odometry_estimated_simplified_model.png" alt = "odometry trajectory" width = "400"/>
+  <img src="./output/odometry_estimated_realistic_model.png" alt = "odometry trajectory" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 2: Simplified model (left) and realistic model (right)</em>
@@ -85,8 +85,8 @@ The plots (Fig. 2) show that the estimated trajectory closely follows the ground
 
 ### L2 norm error of odometry estimated
 <p align="center">
-  <img src="./output/error_odometry_estimated_simplified_model.png" alt = "L2 norm error" width = "450"/>
-  <img src="./output/error_odometry_estimated_realistic_model.png" alt = "L2 norm error" width = "450"/>
+  <img src="./output/error_odometry_estimated_simplified_model.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_estimated_realistic_model.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 3: Simplified model (left) and realistic model (right)</em>
@@ -151,8 +151,8 @@ It is also possible to choose the number of iterations and whether to use an ana
 
 **Chi-square error statistics**
 <p align="center">
-  <img src="./output/chi_stat_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "450"/>
-  <img src="./output/chi_stat_analytical_jacobian.png" alt = "Theta comparison" width = "450"/>
+  <img src="./output/chi_stat_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/chi_stat_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 4: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -173,8 +173,8 @@ The generated plots show the effect of the calibration:
 
 **Numerical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "450"/>
-  <img src="./output/theta_calibrated_numerical_jacobian.png" alt = "Theta comparison" width = "450"/>
+  <img src="./output/odometry_calibrated_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 5: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
@@ -182,8 +182,8 @@ The generated plots show the effect of the calibration:
 
 **Analytical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "450"/>
-  <img src="./output/theta_calibrated_analytical_jacobian.png" alt = "Theta comparison" width = "450"/>
+  <img src="./output/odometry_calibrated_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
@@ -191,8 +191,8 @@ The generated plots show the effect of the calibration:
 
 Additionally, the L2 error over time is plotted:
 <p align="center">
-  <img src="./output/error_odometry_calibrated_numerical_jacobian.png" alt = "L2 norm error" width = "450"/>
-  <img src="./output/error_odometry_calibrated_analytical_jacobian.png" alt = "L2 norm error" width = "450"/>
+  <img src="./output/error_odometry_calibrated_numerical_jacobian.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_calibrated_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 7: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -291,6 +291,31 @@ Error improvement: 93.7%
 Final Chi-square: 4.266616e-02
 
 The output results and images are in the folder: ``` ./output ```
+
+## Analysis of the output
+Both calibration methods (numerical and analytical Jacobian) reach very similar results in terms of final error and overall improvement, as confirmed by the chi-square and L2 norm errors.
+
+**Numerical stability**
+- Analytical jacobian: converges in fewer iterations
+- Numerical jacobian: requires more iterations and shows larger oscillations in the estimated parameters. Notably, ktraction reaches an unrealistically high value.
+
+**Estimated parameters**
+The parameters ktraction and ksteer are more realistic and physically consistent when using the analytical Jacobian.
+
+**Correction matrix**
+The analytical jacobian leads to a correction matrix with significantly less distortion:
+- scale factor y: -40 vs. -159
+- cross-coupling xy: 33 vs. 105
+
+These anomalous values in the numerical jacobian may indicate instability or noise in the Jacobian computation process.
+
+## Conclusions
+The trajectory reconstruction using the simplified model shows excellent accuracy, with an L2 norm error of mean 0.079684, min 0.000000 and max 0.172628.
+
+The analytical Jacobian provides a more stable, coherent, and physically meaningful calibration:
+- faster convergence
+- more realistic parameter estimates
+- less distortion in the correction matrix
 
 ## How run the code
 ```shell
