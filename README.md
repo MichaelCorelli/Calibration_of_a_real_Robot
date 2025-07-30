@@ -37,17 +37,6 @@ Encoder readings are stored as **uint32** values. To avoid overflow issues, we c
 - joints max encoder values: steering = 8192, traction_wheel = 5000 
 - laser wrt base link has: translation = [1.5, 0, 0] and rotation = [0, 0, 0, 1]
 
-## Methodology
-Identify the state space X:
-- Qualify the domain
-- Find a locally Euclidean parameterization
-
-Identify the measurement space(s) Z:
-- Qualify the domain
-- Find a locally Euclidean parameterization
-
-Identify the prediction functions h(x)
-
 ## Robot trajectory
 
 ### Preprocessing
