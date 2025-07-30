@@ -160,7 +160,6 @@ function J = Jacobian_analytical(state, u, z)
   J(:, 12) = t2v((-inv(laser) * dlaser_theta * inv(laser)) * v2t(z) * laser + (inv(laser) * v2t(z) * dlaser_theta));
 endfunction
 
-
 #calibration correction to odometry
 function odometry_corrected = odometry_correction(X, laser_params, odometry_pose)
 
