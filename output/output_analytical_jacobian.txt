@@ -1,27 +1,28 @@
 Loading the dataset
 Dataset loaded
+Plot closed before saving is completed
 L2 Norm error: mean 0.079684, min 0.000000, max 0.172628.
-Iteration 1: chi = 4.66e-02, inliers = 101, laser = [0.897,0.352,1.000]
-Iteration 2: chi = 4.62e-02, inliers = 148, laser = [0.040,0.666,1.000]
-Iteration 3: chi = 4.55e-02, inliers = 198, laser = [-0.525,0.926,0.999]
-Iteration 4: chi = 4.46e-02, inliers = 302, laser = [-0.854,0.954,0.999]
-Iteration 5: chi = 4.38e-02, inliers = 390, laser = [-1.073,0.851,0.999]
-Iteration 6: chi = 4.35e-02, inliers = 474, laser = [-1.184,0.691,0.999]
-Iteration 7: chi = 4.33e-02, inliers = 512, laser = [-1.221,0.520,0.999]
-Iteration 8: chi = 4.31e-02, inliers = 523, laser = [-1.228,0.356,0.999]
-Iteration 9: chi = 4.30e-02, inliers = 533, laser = [-1.224,0.197,0.999]
-Iteration 10: chi = 4.29e-02, inliers = 547, laser = [-1.224,0.057,0.999]
-Iteration 11: chi = 4.28e-02, inliers = 549, laser = [-1.229,-0.070,0.999]
-Iteration 12: chi = 4.28e-02, inliers = 554, laser = [-1.239,-0.183,0.998]
-Iteration 13: chi = 4.27e-02, inliers = 561, laser = [-1.252,-0.273,0.998]
-Iteration 14: chi = 4.27e-02, inliers = 563, laser = [-1.266,-0.339,0.998]
-Iteration 15: chi = 4.27e-02, inliers = 572, laser = [-1.280,-0.385,0.998]
+Iteration 1: chi = 4.66e-02, inliers = 101, laser = [0.897, 0.352, 1.000]
+Iteration 2: chi = 4.62e-02, inliers = 148, laser = [0.040, 0.666, 1.000]
+Iteration 3: chi = 4.55e-02, inliers = 198, laser = [-0.525, 0.926, 0.999]
+Iteration 4: chi = 4.46e-02, inliers = 302, laser = [-0.854, 0.954, 0.999]
+Iteration 5: chi = 4.38e-02, inliers = 390, laser = [-1.073, 0.851, 0.999]
+Iteration 6: chi = 4.35e-02, inliers = 474, laser = [-1.184, 0.691, 0.999]
+Iteration 7: chi = 4.33e-02, inliers = 512, laser = [-1.221, 0.520, 0.999]
+Iteration 8: chi = 4.31e-02, inliers = 523, laser = [-1.228, 0.356, 0.999]
+Iteration 9: chi = 4.30e-02, inliers = 533, laser = [-1.224, 0.197, 0.999]
+Iteration 10: chi = 4.29e-02, inliers = 547, laser = [-1.224, 0.057, 0.999]
+Iteration 11: chi = 4.28e-02, inliers = 549, laser = [-1.229, -0.070, 0.999]
+Iteration 12: chi = 4.28e-02, inliers = 554, laser = [-1.239, -0.183, 0.998]
+Iteration 13: chi = 4.27e-02, inliers = 561, laser = [-1.252, -0.273, 0.998]
+Iteration 14: chi = 4.27e-02, inliers = 563, laser = [-1.266, -0.339, 0.998]
+Iteration 15: chi = 4.27e-02, inliers = 572, laser = [-1.280, -0.385, 0.998]
 Iter 16: step refused, c = 1.557731e-10
-Iteration 16: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Iteration 16: chi = 4.27e-02, inliers = 579, laser = [-1.280, -0.385, 0.998]
 Iter 17: step refused, c = 1.869278e-10
-Iteration 17: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Iteration 17: chi = 4.27e-02, inliers = 579, laser = [-1.280, -0.385, 0.998]
 Iter 18: step refused, c = 2.243133e-10
-Iteration 18: chi = 4.27e-02, inliers = 579, laser = [-1.280,-0.385,0.998]
+Iteration 18: chi = 4.27e-02, inliers = 579, laser = [-1.280, -0.385, 0.998]
 Stopping at iter 18: chi = 4.266616e-02
 Correction matrix X:
    3.6021e-01   3.3140e+01   3.5827e+00

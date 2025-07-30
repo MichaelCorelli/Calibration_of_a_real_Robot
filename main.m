@@ -3,7 +3,9 @@ close all
 clear
 clc
 
+source "robot_calibration/trajectory.m"
 source "robot_calibration/calibration.m"
+source "robot_calibration/plots.m"
 source "robot_calibration/utilities.m"
 
 #to observe the odometry and tracker trajectories in motion, set: on
@@ -57,8 +59,8 @@ pause(1);
 
 #start calibration
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 30;
-jacobian_type = true; #set true for numerical jacobian and false for analytical jacobian
+n_iter = 18;
+jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
 [X, laser_params, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
 disp('Correction matrix X:')
