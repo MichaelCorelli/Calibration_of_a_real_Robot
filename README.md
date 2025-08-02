@@ -116,11 +116,15 @@ The calibration algorithhm uses an iterative **Lenberg-Marquardt** optimization,
 
 This approach estimates both:
 - the correction matrix X, which compensates for systematic odometric distortions
+- the kinematic parameters
 - the trasformation of the laser with respect to the robot frame.
 
 The initial state vector is composed of:
-- the nine elements of the identity matrix, representing the initial guess for X
+- a 3x3 matrix X, initialized as the product of a rotation matrix (modeling the initial guess of the steering offset) and a diagonal scaling matrix (containing a good guess for traction, steering and angular gain)
+- the initial axis lenght of the robot
 - the initial guess of the laser trasformation $x$, $y$, and $\theta$
+
+This provides a more informed starting point than using an identity matrix.
 
 The optimization is based on minimizing the error between the incremental poses obtained from odometry and the tracking system, also considering the laser transformation.
 Convergence is controlled by:
@@ -130,8 +134,9 @@ Convergence is controlled by:
 
 To avoid numerical instability a damping factor is introduced (computed from the largest diagonal element of the Hessian matrix).
 
-The odometry calibration returns several outputs:
+The odometry calibration provides:
 - a correction matrix X (3x3)
+- the calibrated values of the kinematic parameters
 - the estimated laser pose with respect to the robot base
 - chi-square error statistics for each iteration
 - the number of inliers used in the optimization.
@@ -232,14 +237,17 @@ The generated plots show the effect of the calibration:
 </p>
 
 ### Analysis of calibrated parameters
-The initial kinematic parameters (ksteer, ktraction, steer offset and baseline) are updated based on the estimated correction matrix X.
+The initial kinematic parameters (ksteer, ktraction, steer offset and baseline) are updated during the optimization process:
+- the matrix X is decomposed into a rotation and scaling component to extract ksteer, ktraction and steer offset
+- the axis length is included as an optimezed parameters
 
-Each parameter is rescaled by the corresponding coefficient from X, allowing the calibrated model to better reflect the true motion behavior of the robot.
+This calibration step ensures that the estimated parameters more accurately reflect the true kinematic behavior of the robot.
 
 ### Correction matrix X analysis
 The correction matrix X compensates for systematic odometric errors:
 - scaling factors in $x$, $y$ and $\theta$
-- cross-couplig effects between $x$ and $y$ directions.
+- cross-couplig effects between $x$ and $y$ directions
+- residual misalignments absorbed by the steer offset
 
 ### Final verification
 The effectiveness of the calibration is assessed by:
@@ -456,27 +464,37 @@ The output results and images are in the folder: ``` ./output ```
 ## Analysis of the output
 Both calibration methods (numerical and analytical Jacobian) reach very similar results in terms of final error and overall improvement, as confirmed by the chi-square and L2 norm errors.
 
+**Models** utilized:
+- Simplified model: models only the key components of the system, using fewer parameters. It is more computationally efficient.
+- Realisitc mdoel: more detailed and accurate representations of the robot’s physical behavior, offering greater model fidelity at the cost of increased computational complexity.
+
 **Numerical stability**
-- Analytical jacobian: converges in fewer iterations
-- Numerical jacobian: requires more iterations and shows larger oscillations in the estimated parameters. Notably, ktraction reaches an unrealistically high value.
-
-**Estimated parameters**
-The parameters ktraction and ksteer are more realistic and physically consistent when using the analytical Jacobian.
-
-**Correction matrix**
-The analytical jacobian leads to a correction matrix with significantly less distortion:
-- scale factor y: -40 vs. -159
-- cross-coupling xy: 33 vs. 105
-
-These anomalous values in the numerical jacobian may indicate instability or noise in the Jacobian computation process.
+- Analytical jacobian:
+  - converges in fewer iterations
+  - produces parameter that are more consistent with the physical behavior of the robot
+  - achieves better final errors
+  - provides more consistent and stable sensor position estimates
+- Numerical jacobian:
+  - requires more iterations to converge
+  - shows larger oscillations in the estimated parameters
 
 ## Conclusions
+The analytical jacobian provides the best performance:
+- faster and more stable convergence
+- more realistic and physically consistent parameter estimates
+- lower final errors and better calibration accuracy
+
+The simpified model performs comparably to the realisitc model, but:
+- is more computationally efficient
+- achieves nearly identical improvements in final error
+- is preferable when computational resources are limited
+
 The trajectory reconstruction using the simplified model shows excellent accuracy, with an L2 norm error of mean 0.079684, min 0.000000 and max 0.172628.
 
-The analytical Jacobian provides a more stable, coherent, and physically meaningful calibration:
-- faster convergence
-- more realistic parameter estimates
-- less distortion in the correction matrix
+The best result is obtained using the simplified model with the analytical Jacobian, which offers the best trade-off between accuracy, stability and computational efficiency.
+- mean final error 0.8269 m
+- error reductiuon 94.3%
+- estimated paramters: physically plausible and consistent
 
 ## How run the code
 ```shell
