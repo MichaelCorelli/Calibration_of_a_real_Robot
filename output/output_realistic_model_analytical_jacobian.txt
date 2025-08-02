@@ -1,0 +1,63 @@
+Loading the dataset
+Dataset loaded
+L2 Norm error: mean 0.190549, min 0.000000, max 0.306568.
+Initial chi: 4.703975e-02
+Iter 1: chi = 4.57e-02, inliers = 88
+Iter 2: chi = 4.42e-02, inliers = 261
+Iter 3: chi = 4.36e-02, inliers = 399
+Iter 4: chi = 4.34e-02, inliers = 485
+Iter 5: chi = 4.32e-02, inliers = 504
+Iter 6: chi = 4.31e-02, inliers = 532
+Iter 7: chi = 4.31e-02, inliers = 538
+Iter 8: chi = 4.30e-02, inliers = 549
+Iter 9: chi = 4.30e-02, inliers = 557
+Iter 10: chi = 4.29e-02, inliers = 555
+Iter 11: chi = 4.29e-02, inliers = 562
+Iter 12: chi = 4.28e-02, inliers = 562
+Iter 13: chi = 4.28e-02, inliers = 560
+Iter 14: chi = 4.28e-02, inliers = 568
+Iter 15: chi = 4.28e-02, inliers = 570
+Iter 16: chi = 4.28e-02, inliers = 575
+Iter 17: chi = 4.28e-02, inliers = 584
+Iter 18: chi = 4.28e-02, inliers = 584
+
+Calibration:
+Mean error before calibration: 14.4164 m
+Mean error after calibration: 0.8187 m
+Improvement: 13.5977 m (94.3%)
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045706   0.044229   0.043644   0.043385   0.043205   0.043117   0.043077
+
+ Columns 8 through 14:
+
+   0.043021   0.042972   0.042905   0.042853   0.042824   0.042795   0.042791
+
+ Columns 15 through 18:
+
+   0.042784   0.042776   0.042771   0.042758
+
+Calibrated parameters
+ktraction (speed scale): 0.007154 (initial: 0.010614), change: -32.6%
+ksteer (steering scale): 0.164106 (initial: 0.100000), change: 64.1%
+ktheta (rotation scale): 4.841329 (initial: 1.0), change: 384.1%
+steer_offset: -0.976285 rad = -55.94° (initial: 0.00°), change: -55.94°
+axis_length: 1.374741 m (initial: 1.400 m), change: -1.8%
+Scale factor:
+Scale X: 0.674001 (-32.60% change)
+Scale Y: 1.641056 (64.11% change)
+Scale Theta: 4.841329 (384.13% change)
+
+Sensor position
+2D position of the sensor with respect to the base link:
+x: -1.3515 m
+y: -0.5411 m
+theta: 0.9993 rad (57.26 degrees)
+
+Calibration validation
+Error improvement: 94.3%
+Final chi-square: 4.275811e-02
+Initial chi-square: 4.570565e-02
+Chi-square reduction: 6.4%
+L2 Norm error: mean 0.639362, min 0.000965, max 1.384192.

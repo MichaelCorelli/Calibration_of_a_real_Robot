@@ -30,12 +30,12 @@ function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_
 
   chi_stats = zeros(1, n_iter);
   n_inliers = zeros(1, n_iter);
-  min_chi = inf;
+  chi_min = inf;
   n_count = 0;
   max_step = 3;
 
   chi_initial = chi_tot(state, odometry_inc, tracker_inc, threshold, axis_length);
-  fprintf('Chi iniziale: %.6e\n', chi_initial);
+  fprintf('Initial chi: %.6e\n', chi_initial);
 
   for i = 1:n_iter
     [H, b, chi, inliers] = linear_s(state, odometry_inc, tracker_inc, threshold, jacobian_type, axis_length);
@@ -55,8 +55,8 @@ function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_
       state = state_new;
       chi = chi_new;
       c = c / d;
-      n_count = (chi < min_chi) * 0 + (chi >= min_chi) * (n_count + 1);
-      min_chi = min(min_chi, chi);
+      n_count = (chi < chi_min) * 0 + (chi >= chi_min) * (n_count + 1);
+      chi_min = min(chi_min, chi);
     else
       c = c * d;
       n_count = n_count + 1;
@@ -65,17 +65,17 @@ function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_
 
     chi_stats(i) = chi;
     
-    X_mat = reshape(state(1:9), 3, 3);
+    X_m = reshape(state(1:9), 3, 3);
     laser_params = state(10:12);
     axis_length_current = state(13);
 
-    steer_offset_calibrated = atan2(X_mat(2,1), X_mat(1,1));
+    steer_offset_cal = atan2(X_m(2,1), X_m(1,1));
 
-    R_calibrated = [cos(steer_offset_calibrated), -sin(steer_offset_calibrated), 0;
-                    sin(steer_offset_calibrated),  cos(steer_offset_calibrated), 0;
-                    0,                             0,                            1];
+    R = [cos(steer_offset_cal), -sin(steer_offset_cal), 0;
+         sin(steer_offset_cal),  cos(steer_offset_cal), 0;
+         0,                                          0, 1];
 
-    S_calibrated = R_calibrated' * X_mat;
+    S_calibrated = R' * X_m;
 
     ktraction_calibrated = S_calibrated(1,1);  
     ksteer_calibrated = S_calibrated(2,2);     
@@ -201,10 +201,8 @@ function J = Jacobian_numerical(f, state, iteration)
   if nargin < 3
     iteration = 1;
   endif
-  
-  base_step = 1e-6;
-  adaptive_factor = max(0.3, 1.0 / sqrt(iteration));
-  d_rel = base_step * adaptive_factor;
+
+  d_rel = 1e-6 * max(0.3, 1.0 / sqrt(iteration));
   
   n = numel(state);
   f0 = f(state);

@@ -1,0 +1,39 @@
+Loading the dataset
+Dataset loaded
+L2 Norm error: mean 0.190549, min 0.000000, max 0.306568.
+Initial chi: 4.703975e-02
+Iter 1: chi = 4.52e-02, inliers = 88
+Iter 2: chi = 4.37e-02, inliers = 300
+Iter 3: chi = 4.32e-02, inliers = 434
+Iter 4: chi = 4.29e-02, inliers = 501
+
+Calibration:
+Mean error before calibration: 14.4164 m
+Mean error after calibration: 1.4169 m
+Improvement: 12.9995 m (90.2%)
+Chi-square statistics:
+   0.045177   0.043734   0.043181   0.042902
+
+Calibrated parameters
+ktraction (speed scale): 0.006376 (initial: 0.010614), change: -39.9%
+ksteer (steering scale): 0.196043 (initial: 0.100000), change: 96.0%
+ktheta (rotation scale): 4.960237 (initial: 1.0), change: 396.0%
+steer_offset: -1.065996 rad = -61.08° (initial: 0.00°), change: -61.08°
+axis_length: 1.358168 m (initial: 1.400 m), change: -3.0%
+Scale factor:
+Scale X: 0.600681 (-39.93% change)
+Scale Y: 1.960429 (96.04% change)
+Scale Theta: 4.960237 (396.02% change)
+
+Sensor position
+2D position of the sensor with respect to the base link:
+x: -0.5263 m
+y: -0.2723 m
+theta: 0.9999 rad (57.29 degrees)
+
+Calibration validation
+Error improvement: 90.2%
+Final chi-square: 4.290178e-02
+Initial chi-square: 4.517725e-02
+Chi-square reduction: 5.0%
+L2 Norm error: mean 1.013364, min 0.002757, max 2.271333.

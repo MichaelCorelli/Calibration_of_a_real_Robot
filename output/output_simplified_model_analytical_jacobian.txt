@@ -1,0 +1,62 @@
+Loading the dataset
+Dataset loaded
+L2 Norm error: mean 0.079684, min 0.000000, max 0.172628.
+Initial chi: 4.703975e-02
+Iter 1: chi = 4.57e-02, inliers = 88
+Iter 2: chi = 4.42e-02, inliers = 262
+Iter 3: chi = 4.37e-02, inliers = 401
+Iter 4: chi = 4.34e-02, inliers = 479
+Iter 5: chi = 4.32e-02, inliers = 504
+Iter 6: chi = 4.31e-02, inliers = 533
+Iter 7: chi = 4.31e-02, inliers = 537
+Iter 8: chi = 4.30e-02, inliers = 551
+Iter 9: chi = 4.30e-02, inliers = 551
+Iter 10: chi = 4.29e-02, inliers = 558
+Iter 11: chi = 4.29e-02, inliers = 556
+Iter 12: chi = 4.28e-02, inliers = 561
+Iter 13: chi = 4.28e-02, inliers = 558
+Iter 14: chi = 4.28e-02, inliers = 564
+Iter 15: chi = 4.28e-02, inliers = 569
+Iter 16: chi = 4.28e-02, inliers = 574
+Iter 17: chi = 4.27e-02, inliers = 583
+
+Calibration:
+Mean error before calibration: 14.5470 m
+Mean error after calibration: 0.8269 m
+Improvement: 13.7201 m (94.3%)
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045697   0.044226   0.043651   0.043371   0.043208   0.043126   0.043077
+
+ Columns 8 through 14:
+
+   0.043046   0.042980   0.042936   0.042886   0.042846   0.042810   0.042798
+
+ Columns 15 through 17:
+
+   0.042794   0.042766   0.042746
+
+Calibrated parameters
+ktraction (speed scale): 0.007027 (initial: 0.010614), change: -33.8%
+ksteer (steering scale): 0.200239 (initial: 0.100000), change: 100.2%
+ktheta (rotation scale): 4.893099 (initial: 1.0), change: 389.3%
+steer_offset: -0.977283 rad = -55.99° (initial: 0.00°), change: -55.99°
+axis_length: 1.375746 m (initial: 1.400 m), change: -1.7%
+Scale factor:
+Scale X: 0.662025 (-33.80% change)
+Scale Y: 2.002387 (100.24% change)
+Scale Theta: 4.893099 (389.31% change)
+
+Sensor position
+2D position of the sensor with respect to the base link:
+x: -1.3503 m
+y: -0.5288 m
+theta: 0.9997 rad (57.28 degrees)
+
+Calibration validation
+Error improvement: 94.3%
+Final chi-square: 4.274564e-02
+Initial chi-square: 4.569650e-02
+Chi-square reduction: 6.5%
+L2 Norm error: mean 0.596068, min 0.000605, max 1.432876.

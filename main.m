@@ -50,10 +50,16 @@ delta_time = delta_time(time);
 x_initial = [Ksteer, Ktraction, axis_length, steer_offset];
 odometry_pose = odometry(x_initial, delta_ticks, delta_time);
 
+#plot of: odometry, tracker and odometry estimated
+plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time);
+pause(1);
+plot_odometry_error(model_pose, odometry_pose, h, time);
+pause(1);
+
 #start calibration
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 18;
-jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
+n_iter = 4;
+jacobian_type = true; #set true for numerical jacobian and false for analytical jacobian
 
 [X, laser_params, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
@@ -75,34 +81,34 @@ plot_chi_stats(chi_stats, h);
 pause(1);
 
 fprintf('\nCalibrated parameters\n');
-steer_offset_calibrated = atan2(X(2,1), X(1,1));
-R_calibrated = [cos(steer_offset_calibrated), -sin(steer_offset_calibrated), 0;
-                sin(steer_offset_calibrated),  cos(steer_offset_calibrated), 0;
+steer_offset_cal = atan2(X(2,1), X(1,1));
+R = [cos(steer_offset_cal), -sin(steer_offset_cal), 0;
+                sin(steer_offset_cal),  cos(steer_offset_cal), 0;
                 0,                             0,                            1];
-S_calibrated = R_calibrated' * X;
+S = R' * X;
 
-ktraction_calibrated = S_calibrated(1,1) * Ktraction;
-ksteer_calibrated = S_calibrated(2,2) * Ksteer;
-ktheta_calibrated = S_calibrated(3,3);
+ktraction_cal = S(1,1) * Ktraction;
+ksteer_cal = S(2,2) * Ksteer;
+ktheta_cal = S(3,3);
 
-fprintf('ktraction (speed scale): %.6f (initial: %.6f), change: %.1f%%\n', ktraction_calibrated, Ktraction, (ktraction_calibrated/Ktraction - 1)*100);
-fprintf('ksteer (steering scale): %.6f (initial: %.6f), change: %.1f%%\n', ksteer_calibrated, Ksteer, (ksteer_calibrated/Ksteer - 1)*100);
-fprintf('ktheta (rotation scale): %.6f (initial: 1.0), change: %.1f%%\n', ktheta_calibrated, (ktheta_calibrated - 1)*100);
-fprintf('steer_offset: %.6f rad = %.2f° (initial: %.2f°), change: %.2f°\n', steer_offset_calibrated, steer_offset_calibrated*180/pi, steer_offset*180/pi, (steer_offset_calibrated - steer_offset)*180/pi);
+fprintf('ktraction (speed scale): %.6f (initial: %.6f), change: %.1f%%\n', ktraction_cal, Ktraction, (ktraction_cal/Ktraction - 1)*100);
+fprintf('ksteer (steering scale): %.6f (initial: %.6f), change: %.1f%%\n', ksteer_cal, Ksteer, (ksteer_cal/Ksteer - 1)*100);
+fprintf('ktheta (rotation scale): %.6f (initial: 1.0), change: %.1f%%\n', ktheta_cal, (ktheta_cal - 1)*100);
+fprintf('steer_offset: %.6f rad = %.2f° (initial: %.2f°), change: %.2f°\n', steer_offset_cal, steer_offset_cal*180/pi, steer_offset*180/pi, (steer_offset_cal - steer_offset)*180/pi);
 fprintf('axis_length: %.6f m (initial: %.3f m), change: %.1f%%\n', axis_length_final, axis_length, (axis_length_final/axis_length - 1)*100);
 
 fprintf('Scale factor:\n');
-fprintf('Scale X: %.6f (%.2f%% change)\n', S_calibrated(1,1), (S_calibrated(1,1)-1)*100);
-fprintf('Scale Y: %.6f (%.2f%% change)\n', S_calibrated(2,2), (S_calibrated(2,2)-1)*100);
-fprintf('Scale Theta: %.6f (%.2f%% change)\n', S_calibrated(3,3), (S_calibrated(3,3)-1)*100);
+fprintf('Scale X: %.6f (%.2f%% change)\n', S(1,1), (S(1,1)-1)*100);
+fprintf('Scale Y: %.6f (%.2f%% change)\n', S(2,2), (S(2,2)-1)*100);
+fprintf('Scale Theta: %.6f (%.2f%% change)\n', S(3,3), (S(3,3)-1)*100);
 
-fprintf('\n=== SENSOR POSITION ===\n');
+fprintf('\nSensor position\n');
 fprintf('2D position of the sensor with respect to the base link:\n');
 fprintf('x: %.4f m\n', laser_params(1));
 fprintf('y: %.4f m\n', laser_params(2));
 fprintf('theta: %.4f rad (%.2f degrees)\n', laser_params(3), laser_params(3)*180/pi);
 
-fprintf('\n=== CALIBRATION VALIDATION ===\n');
+fprintf('\nCalibration validation\n');
 fprintf('Error improvement: %.1f%%\n', (error_before - error_after) / error_before * 100);
 fprintf('Final chi-square: %.6e\n', chi_stats(end));
 fprintf('Initial chi-square: %.6e\n', chi_stats(1));
