@@ -115,16 +115,14 @@ From the odometry data, only the values $x$, $y$ and $\theta$ are used. (since t
 The calibration algorithhm uses an iterative **Lenberg-Marquardt** optimization, combining **gradient descent** and the **Gauss-Newton method**.
 
 This approach estimates both:
-- the correction matrix X, which compensates for systematic odometric distortions
-- the kinematic parameters
+- the robot's kinematic parameters
 - the trasformation of the laser with respect to the robot frame.
 
-The initial state vector is composed of:
-- a 3x3 matrix X, initialized as the product of a rotation matrix (modeling the initial guess of the steering offset) and a diagonal scaling matrix (containing a good guess for traction, steering and angular gain)
-- the initial axis lenght of the robot
+The initial state vector includes:
+- a reasonable initial guess for the kinematic parameters
 - the initial guess of the laser trasformation $x$, $y$, and $\theta$
 
-This provides a more informed starting point than using an identity matrix.
+This provides a more informed starting point than a naive initialization.
 
 The optimization is based on minimizing the error between the incremental poses obtained from odometry and the tracking system, also considering the laser transformation.
 Convergence is controlled by:
@@ -132,16 +130,15 @@ Convergence is controlled by:
 - the variation in the chi-square value between successive iterations
 - a counter for consecutive rejected steps.
 
-To avoid numerical instability a damping factor is introduced (computed from the largest diagonal element of the Hessian matrix).
+A damping factor, computed from the largest diagonal entry of the Hessian matrix, is introduced to ensure numerical stability.
 
-The odometry calibration provides:
-- a correction matrix X (3x3)
-- the calibrated values of the kinematic parameters
+The calibration process provides:
+- calibrated kinematic parameters
 - the estimated laser pose with respect to the robot base
 - chi-square error statistics for each iteration
-- the number of inliers used in the optimization.
+- the number of inliers used during optimization.
 
-It is also possible to choose the number of iterations and whether to use an analytical or numerical Jacobian.
+The number of iterations and the choice between analytical or numerical Jacobian can be configured.
 
 **Chi-square error statistics**
 
@@ -160,15 +157,15 @@ Realistic model:
   <img src="./output/chi_stat_realistic_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 4: Numerical jacobian (left) and analytical jacobian (right)</em>
+  <em>Figure 5: Numerical jacobian (left) and analytical jacobian (right)</em>
 </p>
 
 ### Odometry correction
-Once the correction matrix X is estimated, the corrected odometry trajectory is computed. The odometry\_correction function applies X to the odometry increments, correcting systematic distortions and reconstructing the trajectory step by step. Afterward, the function to\_tracker\_frame converts the corrected trajectory from the robot frame to the tracker frame, using the estimated laser transformation.
+Once the correction matrix X is estimated, the corrected odometry trajectory is computed. The odometry\_correction function updates the odometry increments using the estimated kinematic parameters, compensating for systematic distortions and reconstructing the trajectory step by step. Afterward, the function to\_tracker\_frame converts the corrected trajectory from the robot frame to the tracker frame, using the estimated laser transformation.
 
 In summary, raw odometry data are corrected using both:
-- a good guess of kinematic paramters
-- the transformation of the laser with respect to the base.
+- the calibrated kinematic parameters
+- the estimated transformation of the laser with respect to the robot base.
 
 The mean error between the odometry and the tracking data is computed both before and after calibration.
 
@@ -184,7 +181,7 @@ The generated plots show the effect of the calibration:
   <img src="./output/theta_calibrated_simplified_model_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 5: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 **Analytical jacobian**
@@ -193,7 +190,7 @@ The generated plots show the effect of the calibration:
   <img src="./output/theta_calibrated_simplified_model_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 7: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 **The L2 error over time**
@@ -202,7 +199,7 @@ The generated plots show the effect of the calibration:
   <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 7: Numerical jacobian (left) and analytical jacobian (right)</em>
+  <em>Figure 8: Numerical jacobian (left) and analytical jacobian (right)</em>
 </p>
 
 #### Realistic model
@@ -215,7 +212,7 @@ The generated plots show the effect of the calibration:
   <img src="./output/theta_calibrated_realistic_model_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 5: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 9: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 **Analytical jacobian**
@@ -224,7 +221,7 @@ The generated plots show the effect of the calibration:
   <img src="./output/theta_calibrated_realistic_model_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 10: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 **The L2 error over time**
@@ -233,21 +230,19 @@ The generated plots show the effect of the calibration:
   <img src="./output/error_odometry_calibrated_realistic_model_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 7: Numerical jacobian (left) and analytical jacobian (right)</em>
+  <em>Figure 11: Numerical jacobian (left) and analytical jacobian (right)</em>
 </p>
 
 ### Analysis of calibrated parameters
-The initial kinematic parameters (ksteer, ktraction, steer offset and baseline) are updated during the optimization process:
-- the matrix X is decomposed into a rotation and scaling component to extract ksteer, ktraction and steer offset
-- the axis length is included as an optimezed parameters
+The initial kinematic parameters (ksteer, ktraction, steer offset and baseline) are refined during the optimization process to better match the true motion behavior of the robot.
 
-This calibration step ensures that the estimated parameters more accurately reflect the true kinematic behavior of the robot.
+This calibration step ensures that the estimated parameters more accurately reflect the actual kinematic characteristics of the system.
 
-### Correction matrix X analysis
-The correction matrix X compensates for systematic odometric errors:
-- scaling factors in $x$, $y$ and $\theta$
-- cross-couplig effects between $x$ and $y$ directions
-- residual misalignments absorbed by the steer offset
+### Odometry errors
+The calibrated model compensates for systematic odometric errors by:
+- applying scaling corrections to the linear and angular components
+- reducing cross-coupling effects between translation and rotation
+- correcting residual misalignments that affect steering behavior
 
 ### Final verification
 The effectiveness of the calibration is assessed by:
@@ -464,7 +459,7 @@ The output results and images are in the folder: ``` ./output ```
 ## Analysis of the output
 Both calibration methods (numerical and analytical Jacobian) reach very similar results in terms of final error and overall improvement, as confirmed by the chi-square and L2 norm errors.
 
-## Tried subsample
+## Subsampling
 When dealing with a large amount of noisy data, it is possible to reduce the noise by subsampling the dataset. Different subsampling rates were tested, but in every case, the performance was worse compared to using the full dataset. The following is an example using the best model from this study, with one sample kept every 20 data points:
 
 <p align="center">
@@ -472,14 +467,14 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
   <img src="./output/error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 12: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 <p align="center">
   <img src="./output/chi_stat_simplified_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 4: Chi-sqaure with subsample</em>
+  <em>Figure 13: Chi-sqaure with subsample</em>
 </p>
 
 <p align="center">
@@ -487,14 +482,14 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
   <img src="./output/theta_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+  <em>Figure 14: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
 <p align="center">
   <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
-  <em>Figure 7: L2 norm error with data subsample</em>
+  <em>Figure 15: L2 norm error with data subsample</em>
 </p>
 
 **Models** utilized:
@@ -537,9 +532,17 @@ The best result is obtained using the simplified model with the analytical Jacob
 ```shell
 octave main.m
 ```
-to observer the robot and sensor trajectories moving set:
+to observe the robot and sensor trajectories in motion, run:
 ```shell
 octave main.m on
+```
+to apply a subsampling value, run:
+```shell
+octave main.m subsample=value
+```
+to observe the robot and sensor trajectories in motion and apply a subsampling value, run
+```shell
+octave main.m on subsample=value
 ```
 
 ### Project structure
