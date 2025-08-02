@@ -503,17 +503,21 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
 
 **Numerical stability**
 - Analytical jacobian:
-  - converges in fewer iterations
   - produces parameter that are more consistent with the physical behavior of the robot
   - achieves better final errors
   - provides more consistent and stable sensor position estimates
 - Numerical jacobian:
-  - requires more iterations to converge
+  - initially shows reasonable convergence behavior
+  - after a certain point, the optimization becomes unstable:
+    - estimated parameters start to oscillate significantly
+    - the error increases
+    - physically implausible values may appear
   - shows larger oscillations in the estimated parameters
+  - to avoid instability were used only a limited number of iterations
 
 ## Conclusions
 The analytical jacobian provides the best performance:
-- faster and more stable convergence
+- more stable convergence
 - more realistic and physically consistent parameter estimates
 - lower final errors and better calibration accuracy
 
