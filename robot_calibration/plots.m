@@ -117,34 +117,30 @@ function plot_odometry_calibrated(odometry_calibrated, tracker_pose, moving, h, 
   ylabel('y');
   lim_offset = 2;
   xlim([min(min(odometry_calibrated(:, 1)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibrated(:, 1)), max(tracker_pose(:, 1))) + lim_offset]);
-  ylim([min(min(odometry_calibrated(:, 2)), min(tracker_pose(:, 1))) - lim_offset max(max(odometry_calibrated(:, 2)), max(tracker_pose(:, 1))) + lim_offset]);
-
+  ylim([min(min(odometry_calibrated(:, 2)), min(tracker_pose(:, 2))) - lim_offset max(max(odometry_calibrated(:, 2)), max(tracker_pose(:, 2))) + lim_offset]);
+    
   if moving
     line1 = plot(NaN, NaN, 'r-', 'linewidth', 2);
     line2 = plot(NaN, NaN, 'b-', 'linewidth', 2);
     legend('Odometry calibrated pose', 'Tracker pose');
         
-    for i = 1:size(odometry_calibrated, 1),
+    for i = 1:size(odometry_calibrated, 1)
       if ishandle(h)
         set(line1, 'XData', odometry_calibrated(1:i, 1), 'YData', odometry_calibrated(1:i, 2));
         set(line2, 'XData', tracker_pose(1:i, 1), 'YData', tracker_pose(1:i, 2));
-
         pause(delta_time(i));
         drawnow;
       else
         break;
       endif
     endfor
-
   else
     name_file = "./output/odometry_calibrated.png";
     if exist(name_file, "file")
-        delete(name_file);
+      delete(name_file);
     endif
-
     plot(odometry_calibrated(:, 1), odometry_calibrated(:, 2), 'r-', 'linewidth', 2);
     plot(tracker_pose(:, 1), tracker_pose(:, 2), 'b-', 'linewidth', 2);
-
     legend('Odometry calibrated', 'Tracker pose');
     drawnow;
     try
@@ -153,7 +149,6 @@ function plot_odometry_calibrated(odometry_calibrated, tracker_pose, moving, h, 
       disp("Plot closed before saving is completed");
     end
   endif
-    
   waitfor(h);
 endfunction
 
