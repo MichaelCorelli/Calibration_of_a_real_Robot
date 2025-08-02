@@ -1,0 +1,66 @@
+Loading the dataset
+Dataset loaded
+Final samples 2313 (initial samples 2434), (removed 1 every 20)
+L2 Norm error: mean 1.409541, min 0.000000, max 3.829366.
+Initial chi: 4.470295e-02
+Iter 1: chi = 4.30e-02, inliers = 84
+Iter 2: chi = 4.22e-02, inliers = 273
+Iter 3: chi = 4.18e-02, inliers = 371
+Iter 4: chi = 4.15e-02, inliers = 436
+Iter 5: chi = 4.14e-02, inliers = 450
+Iter 6: chi = 4.13e-02, inliers = 472
+Iter 7: chi = 4.12e-02, inliers = 489
+Iter 8: chi = 4.12e-02, inliers = 491
+Iter 9: chi = 4.12e-02, inliers = 494
+Iter 10: chi = 4.12e-02, inliers = 499
+Iter 11: chi = 4.11e-02, inliers = 503
+Iter 12: chi = 4.10e-02, inliers = 509
+Iter 13: chi = 4.10e-02, inliers = 509
+Iter 14: chi = 4.09e-02, inliers = 510
+Iter 15: chi = 4.09e-02, inliers = 513
+Iter 16: chi = 4.09e-02, inliers = 515
+Iter 17: step refused, c = 1.947164e-10
+Iter 17: chi = 4.09e-02, inliers = 533
+Iter 18: step refused, c = 2.336597e-10
+Iter 18: chi = 4.09e-02, inliers = 533
+
+Calibration:
+Mean error before calibration: 15.8715 m
+Mean error after calibration: 2.1888 m
+Improvement: 13.6827 m (86.2%)
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.043024   0.042199   0.041794   0.041534   0.041416   0.041293   0.041243
+
+ Columns 8 through 14:
+
+   0.041214   0.041192   0.041154   0.041079   0.041021   0.040984   0.040947
+
+ Columns 15 through 18:
+
+   0.040920   0.040868   0.040868   0.040868
+
+Calibrated parameters
+ktraction (speed scale): 0.006593 (initial: 0.010614), change: -37.9%
+ksteer (steering scale): -0.457377 (initial: 0.100000), change: -557.4%
+ktheta (rotation scale): 4.540106 (initial: 1.0), change: 354.0%
+steer_offset: -0.980835 rad = -56.20° (initial: 0.00°), change: -56.20°
+axis_length: 1.332880 m (initial: 1.400 m), change: -4.8%
+Scale factor:
+Scale X: 0.621130 (-37.89% change)
+Scale Y: -4.573771 (-557.38% change)
+Scale Theta: 4.540106 (354.01% change)
+
+Sensor position
+2D position of the sensor with respect to the base link:
+x: -1.4045 m
+y: -0.6051 m
+theta: 0.9992 rad (57.25 degrees)
+
+Calibration validation
+Error improvement: 86.2%
+Final chi-square: 4.086755e-02
+Initial chi-square: 4.302440e-02
+Chi-square reduction: 5.0%
+L2 Norm error: mean 1.753748, min 0.001005, max 3.990574.

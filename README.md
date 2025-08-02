@@ -464,6 +464,39 @@ The output results and images are in the folder: ``` ./output ```
 ## Analysis of the output
 Both calibration methods (numerical and analytical Jacobian) reach very similar results in terms of final error and overall improvement, as confirmed by the chi-square and L2 norm errors.
 
+## Tried subsample
+When dealing with a large amount of noisy data, it is possible to reduce the noise by subsampling the dataset. Different subsampling rates were tested, but in every case, the performance was worse compared to using the full dataset. The following is an example using the best model from this study, with one sample kept every 20 data points:
+
+<p align="center">
+  <img src="./output/odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+</p>
+
+<p align="center">
+  <img src="./output/chi_stat_simplified_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 4: Chi-sqaure with subsample</em>
+</p>
+
+<p align="center">
+  <img src="./output/odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Theta comparison" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+</p>
+
+<p align="center">
+  <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 7: L2 norm error with data subsample</em>
+</p>
+
 **Models** utilized:
 - Simplified model: models only the key components of the system, using fewer parameters. It is more computationally efficient.
 - Realisitc mdoel: more detailed and accurate representations of the robot’s physical behavior, offering greater model fidelity at the cost of increased computational complexity.
@@ -516,26 +549,33 @@ octave main.m on
 ├── output
 │   ├── chi_stat_realistic_model_analytical_jacobian.png
 │   ├── chi_stat_realistic_model_numerical_jacobian.png
+│   ├── chi_stat_simplified_model_analytical_jacobian_subsample.png
 │   ├── chi_stat_simplified_model_analytical_jacobian.png
 │   ├── chi_stat_simplified_model_numerical_jacobian.png
 │   ├── error_odometry_calibrated_realistic_model_analytical_jacobian.png
 │   ├── error_odometry_calibrated_realistic_model_numerical_jacobian.png
+│   ├── error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_calibrated_simplified_model_analytical_jacobian.png
 │   ├── error_odometry_calibrated_simplified_model_numerical_jacobian.png
 │   ├── error_odometry_estimated_realistic_model.png
+│   ├── error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_estimated_simplified_model.png
 │   ├── odometry_calibrated_realistic_model_analytical_jacobian.png
 │   ├── odometry_calibrated_realistic_model_numerical_jacobian.png
+│   ├── odometry_calibrated_simplified_model_analytical_jacobian_subsample.png
 │   ├── odometry_calibrated_simplified_model_analytical_jacobian.png
 │   ├── odometry_calibrated_simplified_model_numerical_jacobian.png
 │   ├── odometry_estimated_realistic_model.png
+│   ├── odometry_estimated_simplified_model_analytical_jacobian_subsample.png
 │   ├── odometry_estimated_simplified_model.png
 │   ├── output_realistic_model_analytical_jacobian.txt
 │   ├── output_realistic_model_numerical_jacobian.txt
+│   ├── output_simplified_model_analytical_jacobian_subsample.txt
 │   ├── output_simplified_model_analytical_jacobian.txt
 │   ├── output_simplified_model_numerical_jacobian.txt
 │   ├── theta_calibrated_realistic_model_analytical_jacobian.png
 │   ├── theta_calibrated_realistic_model_numerical_jacobian.png
+│   ├── theta_calibrated_simplified_model_analytical_jacobian_subsample.png
 │   ├── theta_calibrated_simplified_model_analytical_jacobian.png
 │   └── theta_calibrated_simplified_model_numerical_jacobian.png
 ├── README.md

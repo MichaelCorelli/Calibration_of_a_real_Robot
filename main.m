@@ -8,12 +8,20 @@ source "robot_calibration/calibration.m"
 source "robot_calibration/plots.m"
 source "robot_calibration/utilities.m"
 
+moving = false;
+samples_factor = [];
+
 #to observe the odometry and tracker trajectories in motion, set: on
 args = argv();
-if length(args) > 0 && args{1} == 'on'
-    moving = true;
-else
-    moving = false;
+for i = 1:length(args)
+    arg = args{i};
+
+    if strcmp(arg, "on")
+        moving = true;
+    elseif startsWith(arg, "subsample=")
+        tokens = strsplit(arg, "=");
+        samples_factor = str2double(tokens{2});
+    end
 end
 
 h = figure(1);
@@ -41,6 +49,24 @@ max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
 
+if ~isempty(samples_factor)
+    samples_to_keep = [];
+    for i = 1:length(time)
+        if mod(i, samples_factor) ~= 0
+            samples_to_keep = [samples_to_keep, i];
+        end
+    end
+
+    time = time(samples_to_keep);
+    ticks = ticks(samples_to_keep, :);
+    model_pose = model_pose(samples_to_keep, :);
+    tracker_pose = tracker_pose(samples_to_keep, :);
+
+    fprintf('Final samples %d (initial samples %d), (removed 1 every %d)\n', length(time), length(Z{1}), samples_factor);
+else
+    fprintf('Using full dataset (%d samples)\n', length(time));
+end
+
 #delta ticks
 delta_ticks = delta_ticks(ticks, max_encoder_value);
 #delta time
@@ -58,8 +84,8 @@ pause(1);
 
 #start calibration
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 4;
-jacobian_type = true; #set true for numerical jacobian and false for analytical jacobian
+n_iter = 18;
+jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
 
 [X, laser_params, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
 
