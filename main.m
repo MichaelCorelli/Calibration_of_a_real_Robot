@@ -83,8 +83,8 @@ pause(1);
 fprintf('\nCalibrated parameters\n');
 steer_offset_cal = atan2(X(2,1), X(1,1));
 R = [cos(steer_offset_cal), -sin(steer_offset_cal), 0;
-                sin(steer_offset_cal),  cos(steer_offset_cal), 0;
-                0,                             0,                            1];
+     sin(steer_offset_cal),  cos(steer_offset_cal), 0;
+                         0,                      0, 1];
 S = R' * X;
 
 ktraction_cal = S(1,1) * Ktraction;

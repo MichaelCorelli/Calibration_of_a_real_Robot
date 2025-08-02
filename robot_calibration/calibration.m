@@ -10,12 +10,12 @@ function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_
   axis_length = 1.4;
 
   R = [cos(steer_offset), -sin(steer_offset), 0;
-      sin(steer_offset),  cos(steer_offset), 0;
-      0,                 0,                  1];
+       sin(steer_offset),  cos(steer_offset), 0;
+                       0,                  0, 1];
 
-  S = [Ktraction, 0, 0;
-      0, Ksteer, 0;
-      0, 0, 1];
+  S = [Ktraction,      0, 0;
+               0, Ksteer, 0;
+               0,      0, 1];
 
   X_init = R * S;
   X_init(1,3) = 0;
@@ -179,7 +179,7 @@ function J = Jacobian_analytical(state, u, z, axis_length)
               0, 0, 0];
   dlaser_theta = [-s, -c, 0;
                    c, -s, 0;
-                   0, 0,  0];
+                   0,  0, 0];
 
   u_corrected = u;
   u_corrected(3) = u(3) * axis_length_new / 1.4;

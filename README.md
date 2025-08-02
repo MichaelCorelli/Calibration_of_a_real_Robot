@@ -142,8 +142,8 @@ It is also possible to choose the number of iterations and whether to use an ana
 
 Simplified model:
 <p align="center">
-  <img src="./output/chi_stat_simplified_numerical_jacobian.png" alt = "Chi-square" width = "400"/>
-  <img src="./output/chi_stat_simplified_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
+  <img src="./output/chi_stat_simplified_model_numerical_jacobian.png" alt = "Chi-square" width = "400"/>
+  <img src="./output/chi_stat_simplified_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 4: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -151,8 +151,8 @@ Simplified model:
 
 Realistic model:
 <p align="center">
-  <img src="./output/chi_stat_realistic_numerical_jacobian.png" alt = "Chi-square" width = "400"/>
-  <img src="./output/chi_stat_realistic_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
+  <img src="./output/chi_stat_realistic_model_numerical_jacobian.png" alt = "Chi-square" width = "400"/>
+  <img src="./output/chi_stat_realistic_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 4: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -162,7 +162,7 @@ Realistic model:
 Once the correction matrix X is estimated, the corrected odometry trajectory is computed. The odometry\_correction function applies X to the odometry increments, correcting systematic distortions and reconstructing the trajectory step by step. Afterward, the function to\_tracker\_frame converts the corrected trajectory from the robot frame to the tracker frame, using the estimated laser transformation.
 
 In summary, raw odometry data are corrected using both:
-- the correction matrix X
+- a good guess of kinematic paramters
 - the transformation of the laser with respect to the base.
 
 The mean error between the odometry and the tracking data is computed both before and after calibration.
@@ -175,8 +175,8 @@ The generated plots show the effect of the calibration:
 
 **Numerical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_simplified_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/theta_calibrated_simplified_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
+  <img src="./output/odometry_calibrated_simplified_model_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_simplified_model_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 5: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
@@ -184,17 +184,17 @@ The generated plots show the effect of the calibration:
 
 **Analytical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_simplified_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/theta_calibrated_simplified_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
+  <img src="./output/odometry_calibrated_simplified_model_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_simplified_model_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
-- the L2 error over time:
+**The L2 error over time**
 <p align="center">
-  <img src="./output/error_odometry_calibrated_simplified_numerical_jacobian.png" alt = "L2 norm error" width = "400"/>
-  <img src="./output/error_odometry_calibrated_simplified_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_calibrated_simplified_model_numerical_jacobian.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 7: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -206,8 +206,8 @@ The generated plots show the effect of the calibration:
 
 **Numerical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_realistic_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/theta_calibrated_realistic_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
+  <img src="./output/odometry_calibrated_realistic_model_numerical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_realistic_model_numerical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 5: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
@@ -215,17 +215,17 @@ The generated plots show the effect of the calibration:
 
 **Analytical jacobian**
 <p align="center">
-  <img src="./output/odometry_calibrated_realistic_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/theta_calibrated_realistic_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
+  <img src="./output/odometry_calibrated_realistic_model_analytical_jacobian.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_realistic_model_analytical_jacobian.png" alt = "Theta comparison" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 6: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
 </p>
 
-- the L2 error over time:
+**The L2 error over time**
 <p align="center">
-  <img src="./output/error_odometry_calibrated_realistic_numerical_jacobian.png" alt = "L2 norm error" width = "400"/>
-  <img src="./output/error_odometry_calibrated_realistic_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_calibrated_realistic_model_numerical_jacobian.png" alt = "L2 norm error" width = "400"/>
+  <img src="./output/error_odometry_calibrated_realistic_model_analytical_jacobian.png" alt = "L2 norm error" width = "400"/>
 </p>
 <p align="center">
   <em>Figure 7: Numerical jacobian (left) and analytical jacobian (right)</em>
@@ -250,6 +250,7 @@ The effectiveness of the calibration is assessed by:
 The chi-square value is a robust statistical metric for evaluating how well the model fits the observed data. A decrease in both chi-square and mean error indicates that the calibration effectively compensates for odometric distortions and improves the accuracy of the motion estimation.
 
 ## Output
+**Simplified model**
 - Estimated 2D position of the laser sensor with respect to the robot's base link (Initial values: x = 1.500, y = 0.000, theta = 1.000)
   - **Numerical jacobian**:
     - Calibrated values: x = -1.325, y = -0.261, theta = 1.000
@@ -258,84 +259,197 @@ The chi-square value is a robust statistical metric for evaluating how well the 
 
 - Calibrated kinematic parameters: Ksteer, Ktraction, steer offset and baseline (Initial values: ksteer = 0.100000, ktraction = 0.010614, steer offset = 0.000000 and base line = 1.4000)
   - **Numerical jacobian**:
-    - ksteer: 0.500306 rad/tick
-    - ktraction: 1.690311 m/tick
-    - steer offset: 0.000000 rad
-    - base line: 1.4000 m
+    - ksteer: 0.209744 rad/tick
+    - ktraction: 0.006303 m/tick
+    - steer offset: -1.066783 rad
+    - base line: 1.358440 m
   - **Analytical jacobian**
-    - ksteer: 0.490559 rad/tick
-    - ktraction: 0.426997 m/tick
-    - steer offset: 0.000000 rad
-    - base line: 1.4000 m
+    - ksteer: 0.200239 rad/tick
+    - ktraction: 0.007027 m/tick
+    - steer offset: -0.977283 rad
+    - base line: 1.375746 m
+
+- Estimated 2D position of the laser sensor with respect to the robot's base link (Initial values: x = 1.500, y = 0.000, theta = 1.000)
+  - **Numerical jacobian**:
+    - Calibrated values: x = -0.5257, y = -0.2707, theta = 0.9999
+  - **Analytical jacobian**:
+    - Calibrated values: x = -1.3503, y = -0.5288, theta = 0.9997
+
+**Realistic model**
+- Calibrated kinematic parameters: Ksteer, Ktraction, steer offset and baseline (Initial values: ksteer = 0.100000, ktraction = 0.010614, steer offset = 0.000000 and base line = 1.4000)
+  - **Numerical jacobian**:
+    - ksteer: 0.196043 rad/tick
+    - ktraction: 0.006376 m/tick
+    - steer offset: -1.065996 rad
+    - base line: 1.358168 m
+  - **Analytical jacobian**
+    - ksteer: 0.164106 rad/tick
+    - ktraction: 0.007154 m/tick
+    - steer offset: -0.976285 rad
+    - base line: 1.374741 m
+
+- Estimated 2D position of the laser sensor with respect to the robot's base link (Initial values: x = 1.500, y = 0.000, theta = 1.000)
+  - **Numerical jacobian**:
+    - Calibrated values: x = -0.5263, y = -0.2723, theta = 0.9999
+  - **Analytical jacobian**:
+    - Calibrated values: x = -1.3515, y = -0.5411, theta = 0.9993
 
 ### Other output
 **Numerical jacobian**
 
-Calibration results:
+Calibration results of simplified model:
 - Mean error before calibration: 14.5470 m
-- Mean error after calibration: 0.9284 m
-- Improvement: 13.6186 m (93.6%)
-- L2 Norm error: mean 0.646273, min 0.002720, max 1.385045.
+- Mean error after calibration: 1.4210 m
+- Improvement: 13.1260 m (90.2%)
 
-2D position of the sensor w.r.t. the base link:
-- x: -1.3252 m
-- y: -0.2613 m
-- theta: 0.9998 rad (57.28 degrees)
-
-Analysis on correction matrix X
 ```text
-X:
-
-   3.4138e-01   1.0498e+02   3.0392e+00
-
-  -4.9854e-01  -1.5925e+02  -4.6778e-01
-
-   1.5002e-02  -5.1442e+01   5.0031e+00
+Chi-square statistics:
+   0.045166   0.043741   0.043205   0.042925
 ```
 
-- Scale factor x: 0.3414 (-65.9%)
-- Scale factor y: -159.2511 (-16025.1%)
-- Scale factor theta: 5.0031 (400.3%)
-- Cross-coupling xy: 104.980799
-- Cross-coupling yx: -0.498540
+Calibrated parameters:
+- ktraction (speed scale): 0.006303 (initial: 0.010614), change: -40.6%
+- ksteer (steering scale): 0.209744 (initial: 0.100000), change: 109.7%
+- steer_offset: -1.066783 rad = -61.12° (initial: 0.00°), change: -61.12°
+- axis_length: 1.358440 m (initial: 1.400 m), change: -3.0%
 
-Calibration verification:
-- Error improvement: 93.6%
-- Final Chi-square: 4.268839e-02
+Scale factor:
+- Scale X: 0.593867 (-40.61% change)
+- Scale Y: 2.097437 (109.74% change)
+- Scale Theta: 4.961182 (396.12% change)
+
+2D position of the sensor with respect to the base link:
+- x: -0.5257 m
+- y: -0.2707 m
+- theta: 0.9999 rad (57.29 degrees)
+
+Calibration validation:
+- Error improvement: 90.2%
+- Final chi-square: 4.292541e-02
+- Initial chi-square: 4.516616e-02
+- Chi-square reduction: 5.0%
+- L2 Norm error: mean 1.017248, min 0.002762, max 2.292623.
+
+Calibration results of realistic model:
+- Mean error before calibration: 14.4164 m
+- Mean error after calibration: 1.4169 m
+- Improvement: 12.9995 m (90.2%)
+
+```text
+Chi-square statistics:
+   0.045177   0.043734   0.043181   0.042902
+```
+
+Calibrated parameters:
+- ktraction (speed scale): 0.006376 (initial: 0.010614), change: -39.9%
+- ksteer (steering scale): 0.196043 (initial: 0.100000), change: 96.0%
+- steer_offset: -1.065996 rad = -61.08° (initial: 0.00°), change: -61.08°
+- axis_length: 1.358168 m (initial: 1.400 m), change: -3.0%
+
+Scale factor:
+- Scale X: 0.600681 (-39.93% change)
+- Scale Y: 1.960429 (96.04% change)
+- Scale Theta: 4.960237 (396.02% change)
+
+2D position of the sensor with respect to the base link:
+- x: -0.5263 m
+- y: -0.2723 m
+- theta: 0.9999 rad (57.29 degrees)
+
+Calibration validation:
+- Error improvement: 90.2%
+- Final chi-square: 4.290178e-02
+- Initial chi-square: 4.517725e-02
+- Chi-square reduction: 5.0%
+- L2 Norm error: mean 1.013364, min 0.002757, max 2.271333.
 
 **Analytical jacobian**
 
-Calibration results
+Calibration results of simplifed model:
 - Mean error before calibration: 14.5470 m
-- Mean error after calibration: 0.9225 m
-- Improvement: 13.6246 m (93.7%)
-- L2 Norm error: mean 0.662266, min 0.001601, max 1.559847.
+- Mean error after calibration: 0.8269 m
+- Improvement: 13.7201 m (94.3%)
 
-2D position of the sensor w.r.t. the base link:
-- x: -1.2803 m
-- y: -0.3847 m
-- theta: 0.9982 rad (57.19 degrees)
-
-Analysis on correction matrix X
 ```text
-X:
+Chi-square statistics:
+ Columns 1 through 7:
 
-   3.6021e-01   3.3140e+01   3.5827e+00
+   0.045697   0.044226   0.043651   0.043371   0.043208   0.043126   0.043077
 
-  -5.5232e-01  -4.0228e+01  -9.6537e-01
+ Columns 8 through 14:
 
-  -1.8905e-02  -8.7996e+00   4.9056e+00
+   0.043046   0.042980   0.042936   0.042886   0.042846   0.042810   0.042798
+
+ Columns 15 through 17:
+
+   0.042794   0.042766   0.042746
 ```
 
-- Scale factor x: 0.3602 (-64.0%)
-- Scale factor y: -40.2276 (-4122.8%)
-- Scale factor theta: 4.9056 (390.6%)
-- Cross-coupling xy: 33.139730
-- Cross-coupling yx: -0.552323
+Calibrated parameters:
+- traction (speed scale): 0.007027 (initial: 0.010614), change: -33.8%
+- ksteer (steering scale): 0.200239 (initial: 0.100000), change: 100.2%
+- steer_offset: -0.977283 rad = -55.99° (initial: 0.00°), change: -55.99°
+- axis_length: 1.375746 m (initial: 1.400 m), change: -1.7%
 
-Calibration verification:
-- Error improvement: 93.7%
-- Final Chi-square: 4.266616e-02
+Scale factor:
+- Scale X: 0.662025 (-33.80% change)
+- Scale Y: 2.002387 (100.24% change)
+- Scale Theta: 4.893099 (389.31% change)
+
+2D position of the sensor with respect to the base link:
+- x: -1.3503 m
+- y: -0.5288 m
+- theta: 0.9997 rad (57.28 degrees)
+
+Calibration validation:
+- Error improvement: 94.3%
+- Final chi-square: 4.274564e-02
+- Initial chi-square: 4.569650e-02
+- Chi-square reduction: 6.5%
+- L2 Norm error: mean 0.596068, min 0.000605, max 1.432876.
+
+Calibration results of realistic model:
+- Mean error before calibration: 14.4164 m
+- Mean error after calibration: 0.8187 m
+- Improvement: 13.5977 m (94.3%)
+
+```text
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045706   0.044229   0.043644   0.043385   0.043205   0.043117   0.043077
+
+ Columns 8 through 14:
+
+   0.043021   0.042972   0.042905   0.042853   0.042824   0.042795   0.042791
+
+ Columns 15 through 18:
+
+   0.042784   0.042776   0.042771   0.042758
+```
+
+Calibrated parameters:
+- ktraction (speed scale): 0.007154 (initial: 0.010614), change: -32.6%
+- ksteer (steering scale): 0.164106 (initial: 0.100000), change: 64.1%
+- steer_offset: -0.976285 rad = -55.94° (initial: 0.00°), change: -55.94°
+- axis_length: 1.374741 m (initial: 1.400 m), change: -1.8%
+
+Scale factor:
+- Scale X: 0.674001 (-32.60% change)
+- Scale Y: 1.641056 (64.11% change)
+- Scale Theta: 4.841329 (384.13% change)
+
+2D position of the sensor with respect to the base link:
+- x: -1.3515 m
+- y: -0.5411 m
+- theta: 0.9993 rad (57.26 degrees)
+
+Calibration validation:
+- Error improvement: 94.3%
+- Final chi-square: 4.275811e-02
+- Initial chi-square: 4.570565e-02
+- Chi-square reduction: 6.4%
+- L2 Norm error: mean 0.639362, min 0.000965, max 1.384192.
 
 The output results and images are in the folder: ``` ./output ```
 
@@ -382,20 +496,30 @@ octave main.m on
 ├── LICENSE
 ├── main.m
 ├── output
-│   ├── chi_stat_analytical_jacobian.png
-│   ├── chi_stat_numerical_jacobian.png
-│   ├── error_odometry_calibrated_analytical_jacobian.png
-│   ├── error_odometry_calibrated_numerical_jacobian.png
+│   ├── chi_stat_realistic_model_analytical_jacobian.png
+│   ├── chi_stat_realistic_model_numerical_jacobian.png
+│   ├── chi_stat_simplified_model_analytical_jacobian.png
+│   ├── chi_stat_simplified_model_numerical_jacobian.png
+│   ├── error_odometry_calibrated_realistic_model_analytical_jacobian.png
+│   ├── error_odometry_calibrated_realistic_model_numerical_jacobian.png
+│   ├── error_odometry_calibrated_simplified_model_analytical_jacobian.png
+│   ├── error_odometry_calibrated_simplified_model_numerical_jacobian.png
 │   ├── error_odometry_estimated_realistic_model.png
 │   ├── error_odometry_estimated_simplified_model.png
-│   ├── odometry_calibrated_analytical_jacobian.png
-│   ├── odometry_calibrated_numerical_jacobian.png
+│   ├── odometry_calibrated_realistic_model_analytical_jacobian.png
+│   ├── odometry_calibrated_realistic_model_numerical_jacobian.png
+│   ├── odometry_calibrated_simplified_model_analytical_jacobian.png
+│   ├── odometry_calibrated_simplified_model_numerical_jacobian.png
 │   ├── odometry_estimated_realistic_model.png
 │   ├── odometry_estimated_simplified_model.png
-│   ├── output_analytical_jacobian.txt
-│   ├── output_numerical_jacobian.txt
-│   ├── theta_calibrated_analytical_jacobian.png
-│   └── theta_calibrated_numerical_jacobian.png
+│   ├── output_realistic_model_analytical_jacobian.txt
+│   ├── output_realistic_model_numerical_jacobian.txt
+│   ├── output_simplified_model_analytical_jacobian.txt
+│   ├── output_simplified_model_numerical_jacobian.txt
+│   ├── theta_calibrated_realistic_model_analytical_jacobian.png
+│   ├── theta_calibrated_realistic_model_numerical_jacobian.png
+│   ├── theta_calibrated_simplified_model_analytical_jacobian.png
+│   └── theta_calibrated_simplified_model_numerical_jacobian.png
 ├── README.md
 └── robot_calibration
     ├── calibration.m
