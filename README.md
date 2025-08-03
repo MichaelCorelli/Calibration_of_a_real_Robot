@@ -254,12 +254,6 @@ The chi-square value is a robust statistical metric for evaluating how well the 
 
 ## Output
 **Simplified model**
-- Estimated 2D position of the laser sensor with respect to the robot's base link (Initial values: x = 1.500, y = 0.000, theta = 1.000)
-  - **Numerical jacobian**:
-    - Calibrated values: x = -1.325, y = -0.261, theta = 1.000
-  - **Analytical jacobian**:
-    - Calibrated values: x = -1.280, y = -0.385, theta = 0.998
-
 - Calibrated kinematic parameters: Ksteer, Ktraction, steer offset and baseline (Initial values: ksteer = 0.100000, ktraction = 0.010614, steer offset = 0.000000 and base line = 1.4000)
   - **Numerical jacobian**:
     - ksteer: 0.209744 rad/tick
@@ -511,6 +505,34 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
   - to avoid instability were used only a limited number of iterations
 
 ## Conclusions
+### Results tables
+#### Numerical Jacobian
+**Calibration results:**
+| Model      | Mean Error Before (m) | Mean Error After (m) | Improvement (m) | Improvement (%) |
+|------------|------------------------|-----------------------|------------------|------------------|
+| Simplified | 14.5470                | 1.4210                | 13.1260          | 90.2%            |
+| Realistic  | 14.4164                | 1.4169                | 12.9995          | 90.2%            |
+
+**Validation results:**
+| Model      | Error Improvement (%) | Final chi-square    | Initial chi-square    | L2 Norm Error (mean, min, max)       |
+|------------|------------------------|----------------|------------------|----------------------------------------|
+| Simplified | 90.2%                  | 4.292541e-02    | 4.516616e-02     | 1.017248, 0.002762, 2.292623         |
+| Realistic  | 90.2%                  | 4.290178e-02    | 4.517725e-02     | 1.013364, 0.002757, 2.271333         |
+
+#### Analytical Jacobian
+**Calibration results:**
+| Model      | Mean Error Before (m) | Mean Error After (m) | Improvement (m) | Improvement (%) |
+|------------|------------------------|-----------------------|------------------|------------------|
+| Simplified | 14.5470                | 0.8269                | 13.7201          | 94.3%            |
+| Realistic  | 14.4164                | 0.8187                | 13.5977          | 94.3%            |
+
+**Validation results:**
+| Model      | Error Improvement (%) | Final chi-square    | Initial chi-square    | L2 Norm Error (mean, min, max)       |
+|------------|------------------------|----------------|------------------|----------------------------------------|
+| Simplified | 94.3%                  | 4.274564e-02    | 4.569650e-02     | 0.596068, 0.000605, 1.432876         |
+| Realistic  | 94.3%                  | 4.275811e-02    | 4.570565e-02     | 0.639362, 0.000965, 1.384192         |
+
+### Analysis
 The analytical jacobian provides the best performance:
 - more stable convergence
 - more realistic and physically consistent parameter estimates
