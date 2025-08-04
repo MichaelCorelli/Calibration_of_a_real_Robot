@@ -1,13 +1,13 @@
 
-function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type)
+function [X_final, laser_f, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, x_initial, n_iter, jacobian_type)
 
   odometry_inc = new_pose(odometry_pose);
   tracker_inc  = new_pose(tracker_pose);
 
-  Ksteer = 0.1;
-  Ktraction = 0.0106141;
-  steer_offset = 0;
-  axis_length = 1.4;
+  Ksteer = x_initial(1);
+  Ktraction = x_initial(2);
+  axis_length = x_initial(3);
+  steer_offset = x_initial(4);
 
   R = [cos(steer_offset), -sin(steer_offset), 0;
        sin(steer_offset),  cos(steer_offset), 0;

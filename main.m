@@ -12,6 +12,7 @@ moving = false;
 samples_factor = [];
 
 #to observe the odometry and tracker trajectories in motion, set: on
+#to set a value for subsample, use: subsample=value
 args = argv();
 for i = 1:length(args)
     arg = args{i};
@@ -87,7 +88,7 @@ odometry_pose = odometry_pose(:, 1:3);
 n_iter = 18;
 jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
 
-[X, laser_params, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, n_iter, jacobian_type);
+[X, laser_params, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, x_initial, n_iter, jacobian_type);
 
 #errors
 odometry_corrected = odometry_correction(X, laser_params, odometry_pose);

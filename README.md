@@ -42,7 +42,7 @@ Encoder readings are stored as **uint32** values. To avoid overflow issues, we c
 ### Preprocessing
 After loading the dataset, two functions are used to compute the required differentials:
 - delta_ticks function: computes the variation between successive encoder ticks
-- delta time function: computes the time difference between successive samples
+- delta_time function: computes the time difference between successive samples
 
 ### Odometry position estimation
 To generate the odometry-based trajectory, the following must be considered:
@@ -106,10 +106,10 @@ Different thresholds are applied to $x$, $y$, $\theta$, and $\phi$ during the es
 - L2 norm error without thresholds: mean 0.213036, min 0.000000 and max 0.496266.
 
 ## Robot calibration
-The calibration of a mobile robot’s odometry aims to systematically correct scale errors, angular inaccuracies, offsets in the kinematic model, and the transformation between the sensor and the robot base. This is achieved by comparing odometry data, based on encoders and kinematic models, with ground truth data provided by a tracking system.
+The calibration of a mobile robot’s odometry aims to systematically correct scale errors, angular inaccuracies, offsets in the kinematic model and the transformation between the sensor and the robot base. This is achieved by comparing odometry data, based on encoders and kinematic models, with ground truth data provided by a tracking system.
 
 ### Preprocessing
-From the odometry data, only the values $x$, $y$ and $\theta$ are used. (since the ground truth provides these three components).
+From the odometry data only the values $x$, $y$ and $\theta$ are used (since the ground truth provides these three components).
 
 ### Calibration
 The calibration algorithhm uses an iterative **Lenberg-Marquardt** optimization, combining **gradient descent** and the **Gauss-Newton method**.
@@ -159,6 +159,8 @@ Realistic model:
 <p align="center">
   <em>Figure 5: Numerical jacobian (left) and analytical jacobian (right)</em>
 </p>
+
+**Numerical Jacobian**: to avoid instability caused by excessive iterations (starting from 5), only a limited number of iterations was used, as higher counts led to increased calibration error.
 
 ### Odometry correction
 Once the correction matrix X is estimated, the corrected odometry trajectory is computed. The odometry\_correction function updates the odometry increments using the estimated kinematic parameters, compensating for systematic distortions and reconstructing the trajectory step by step. Afterward, the function to\_tracker\_frame converts the corrected trajectory from the robot frame to the tracker frame, using the estimated laser transformation.
@@ -488,7 +490,7 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
 
 **Models** utilized:
 - Simplified model: models only the key components of the system, using fewer parameters. It is more computationally efficient.
-- Realisitc mdoel: more detailed and accurate representations of the robot’s physical behavior, offering greater model fidelity at the cost of increased computational complexity.
+- Realisitc model: more detailed and accurate representations of the robot’s physical behavior, offering greater model fidelity at the cost of increased computational complexity.
 
 **Numerical stability**
 - Analytical jacobian:
