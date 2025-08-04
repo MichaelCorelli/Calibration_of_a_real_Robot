@@ -73,7 +73,7 @@ delta_ticks = delta_ticks(ticks, max_encoder_value);
 #delta time
 delta_time = delta_time(time);
 
-#odometry of front-tractor tricycle
+#odometry of front-tractor tricycle robot
 x_initial = [Ksteer, Ktraction, axis_length, steer_offset];
 odometry_pose = odometry(x_initial, delta_ticks, delta_time);
 

@@ -1,5 +1,5 @@
 # Calibration of a (real) Robot
-It is a Probabilistic Robotics project and consist in the calibration of: the kinematic parameters and the sensor positions of a front-rear tricycle-like robot.
+This is a Probabilistic Robotics project involving the calibration of the kinematic parameters and the sensor positions of a front-tractor tricycle robot.
 The following information is required for calibration: 
 - a dataset.txt file containing the data that come from the sensor of a real robot
 - an intial guess of the kinematic parameters to be estimate
@@ -7,7 +7,7 @@ The following information is required for calibration:
 
 ## Definition of the problem
 The problem involves:
-- a front-rear tricycle-like robot
+- a front-tractor tricycle robot
 - encoder ticks readings
 - sensor positions with respect to an external tracking system
 
