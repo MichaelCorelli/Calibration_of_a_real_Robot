@@ -1,4 +1,3 @@
-
 close all
 clear
 clc
@@ -10,18 +9,47 @@ source "robot_calibration/utilities.m"
 
 moving = false;
 samples_factor = [];
+range1_start = []; range1_end = []; range1_samples_factor = [];
+range2_start = []; range2_end = []; range2_samples_factor = [];
 
 #to observe the odometry and tracker trajectories in motion, set: on
 #to set a value for subsample, use: subsample=value
+#to set two subsample values with two ranges, use: range_subsample=value1,start1,end1,value2,start2,end2
 args = argv();
+moving = false;
+samples_factor = [];
+range1_start = []; range1_end = []; range1_samples_factor = [];
+range2_start = []; range2_end = []; range2_samples_factor = [];
+
 for i = 1:length(args)
     arg = args{i};
 
     if strcmp(arg, "on")
         moving = true;
     elseif startsWith(arg, "subsample=")
-        tokens = strsplit(arg, "=");
-        samples_factor = str2double(tokens{2});
+        if isempty(samples_factor) && isempty(range1_samples_factor) && isempty(range2_samples_factor)
+            tokens = strsplit(arg, "=");
+            samples_factor = str2double(tokens{2});
+        else
+            fprintf('range_subsample is already set.\n');
+        end
+    elseif startsWith(arg, "range_subsample=")
+        if isempty(samples_factor) && isempty(range1_samples_factor) && isempty(range2_samples_factor)
+            tokens = strsplit(arg, "=");
+            range_params = strsplit(tokens{2}, ",");
+            if length(range_params) == 6
+                range1_samples_factor = str2double(range_params{1});
+                range1_start = str2double(range_params{2});
+                range1_end = str2double(range_params{3});
+                range2_samples_factor = str2double(range_params{4});
+                range2_start = str2double(range_params{5});
+                range2_end = str2double(range_params{6});
+            else
+                error('range_subsample: incorrect number of parameters');
+            end
+        else
+            fprintf('subsample is already set.\n');
+        end
     end
 end
 
@@ -50,7 +78,43 @@ max_encoder_value = [8192, 5000];
 
 disp('Dataset loaded');
 
-if ~isempty(samples_factor)
+if ~isempty(range1_samples_factor) && ~isempty(range2_samples_factor)
+    samples_to_keep = [];
+    total_samples = length(time);
+
+    if range1_start < 1 || range1_end > total_samples || range2_start < 1 || range2_end > total_samples
+        error('Not valid ranges.');
+    end
+
+    if range1_start > range1_end || range2_start > range2_end
+        error('Not valid ranges.');
+    end
+
+    for i = 1:total_samples
+        keep_sample = true;
+
+        if i >= range1_start && i <= range1_end
+            if mod(i - range1_start + 1, range1_samples_factor) == 0
+                keep_sample = false;
+            end
+        elseif i >= range2_start && i <= range2_end
+            if mod(i - range2_start + 1, range2_samples_factor) == 0
+                keep_sample = false;
+            end
+        end
+
+        if keep_sample
+            samples_to_keep = [samples_to_keep, i];
+        end
+    end
+
+    time = time(samples_to_keep);
+    ticks = ticks(samples_to_keep, :);
+    model_pose = model_pose(samples_to_keep, :);
+    tracker_pose = tracker_pose(samples_to_keep, :);
+
+elseif ~isempty(samples_factor)
+
     samples_to_keep = [];
     for i = 1:length(time)
         if mod(i, samples_factor) ~= 0
@@ -85,7 +149,7 @@ pause(1);
 
 #start calibration
 odometry_pose = odometry_pose(:, 1:3);
-n_iter = 18;
+n_iter = 25;
 jacobian_type = false; #set true for numerical jacobian and false for analytical jacobian
 
 [X, laser_params, axis_length_final, chi_stats, n_inliers] = odometry_calibration(odometry_pose, tracker_pose, x_initial, n_iter, jacobian_type);

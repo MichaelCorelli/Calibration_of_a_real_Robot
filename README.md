@@ -254,6 +254,75 @@ The effectiveness of the calibration is assessed by:
 
 The chi-square value is a robust statistical metric for evaluating how well the model fits the observed data. A decrease in both chi-square and mean error indicates that the calibration effectively compensates for odometric distortions and improves the accuracy of the motion estimation.
 
+## Subsampling
+When dealing with a large amount of noisy data, it is possible to reduce the noise by subsampling the dataset. The analytical Jacobian was chosen to test the subsampling due to its superior performance. Different subsampling rates were tested and the best results were obtained using **range_subsample=2,150,160,4,180,320**. This means that in the range from sample 150 to 160, one out of every two samples was discarded, and in the range from sample 180 to 320, one out of every four samples was discarded. This demonstrates that these two ranges contain a lot of noisy data. The following are the results using the analytical Jacobian with realistic and simplified models:
+
+**Simplified model**
+<p align="center">
+  <img src="./output/odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 12: Odometry estimated (left) and error odometry estimated (right)</em>
+</p>
+
+**L2 Norm error**: mean 0.948595, min 0.000000, max 1.106146.
+
+<p align="center">
+  <img src="./output/chi_stat_simplified_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 13: Chi-square with subsample</em>
+</p>
+
+<p align="center">
+  <img src="./output/odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Theta comparison" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 14: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+</p>
+
+<p align="center">
+  <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 15: L2 norm error with data subsample</em>
+</p>
+
+**Realisitc model**
+<p align="center">
+  <img src="./output/odometry_estimated_realistic_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/error_odometry_estimated_realistic_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 16: Odometry estimated (left) and error odometry estimated (right)</em>
+</p>
+
+**L2 Norm error**: mean 0.831549, min 0.000000, max 1.035354.
+
+<p align="center">
+  <img src="./output/chi_stat_realistic_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 17: Chi-square with subsample</em>
+</p>
+
+<p align="center">
+  <img src="./output/odometry_calibrated_realistic_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
+  <img src="./output/theta_calibrated_realistic_model_analytical_jacobian_subsample.png" alt = "Theta comparison" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 18: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
+</p>
+
+<p align="center">
+  <img src="./output/error_odometry_calibrated_realistic_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
+</p>
+<p align="center">
+  <em>Figure 19: L2 norm error with data subsample</em>
+</p>
+
 ## Output
 **Simplified model**
 - Calibrated kinematic parameters: Ksteer, Ktraction, steer offset and baseline (Initial values: ksteer = 0.100000, ktraction = 0.010614, steer offset = 0.000000 and base line = 1.4000)
@@ -292,6 +361,25 @@ The chi-square value is a robust statistical metric for evaluating how well the 
     - Calibrated values: x = -0.5263, y = -0.2723, theta = 0.9999
   - **Analytical jacobian**:
     - Calibrated values: x = -1.3515, y = -0.5411, theta = 0.9993
+
+**Subsampling**
+- Calibrated kinematic parameters: Ksteer, Ktraction, steer offset and baseline (Initial values: ksteer = 0.100000, ktraction = 0.010614, steer offset = 0.000000 and base line = 1.4000)
+  - **Simplified model**:
+    - ksteer: 0.209744 rad/tick
+    - ktraction: 0.006303 m/tick
+    - steer offset: -1.066783 rad
+    - base line: 1.358440 m
+  - **Realistic model**
+    - ksteer: 0.200239 rad/tick
+    - ktraction: 0.007027 m/tick
+    - steer offset: -0.977283 rad
+    - base line: 1.375746 m
+
+- Estimated 2D position of the laser sensor with respect to the robot's base link (Initial values: x = 1.500, y = 0.000, theta = 1.000)
+  - **Simplified model**:
+    - Calibrated values: x = -0.5257, y = -0.2707, theta = 0.9999
+  - **Realistic model**:
+    - Calibrated values: x = -1.3503, y = -0.5288, theta = 0.9997
 
 ### Other output
 **Numerical jacobian**
@@ -450,43 +538,108 @@ Calibration validation:
 - Chi-square reduction: 6.4%
 - L2 Norm error: mean 0.639362, min 0.000965, max 1.384192.
 
+**Subsampling**
+
+Calibration results of simplified model:
+- Mean error before calibration: 15.6811 m
+- Mean error after calibration: 0.8652 m
+- Improvement: 14.8159 m (94.5%)
+
+```text
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045106   0.043613   0.043090   0.042779   0.042645   0.042562   0.042499
+
+ Columns 8 through 14:
+
+   0.042483   0.042456   0.042425   0.042370   0.042323   0.042282   0.042237
+
+ Columns 15 through 21:
+
+   0.042207   0.042186   0.042181   0.042172   0.042161   0.042148   0.042147
+
+ Columns 22 through 25:
+
+   0.042139   0.042138   0.042138   0.042138
+```
+
+Calibrated parameters:
+- ktraction (speed scale): 0.006907 (initial: 0.010614), change: -34.9%
+- ksteer (steering scale): 0.408655 (initial: 0.100000), change: 308.7%
+- ktheta (rotation scale): 4.859051 (initial: 1.0), change: 385.9%
+- steer_offset: -0.971213 rad = -55.65° (initial: 0.00°), change: -55.65°
+- axis_length: 1.382351 m (initial: 1.400 m), change: -1.3%
+
+Scale factor:
+- Scale X: 0.650775 (-34.92% change)
+- Scale Y: 4.086553 (308.66% change)
+- Scale Theta: 4.859051 (385.91% change)
+
+2D position of the sensor with respect to the base link:
+- x: -1.3653 m
+- y: -0.5173 m
+- theta: 0.9988 rad (57.23 degrees)
+
+Calibration validation:
+- Error improvement: 94.5%
+- Final chi-square: 4.213786e-02
+- Initial chi-square: 4.510575e-02
+- Chi-square reduction: 6.6%
+- L2 Norm error: mean 0.761683, min 0.001832, max 1.910097.
+
+Calibration results of realistic model:
+- Mean error before calibration: 15.5487 m
+- Mean error after calibration: 0.8388 m
+- Improvement: 14.7099 m (94.6%)
+
+```text
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045111   0.043616   0.043079   0.042771   0.042643   0.042562   0.042492
+
+ Columns 8 through 14:
+
+   0.042473   0.042452   0.042393   0.042348   0.042313   0.042266   0.042228
+
+ Columns 15 through 21:
+
+   0.042194   0.042170   0.042155   0.042146   0.042136   0.042127   0.042119
+
+ Columns 22 through 25:
+
+   0.042115   0.042104   0.042101   0.042101
+```
+
+Calibrated parameters:
+- ktraction (speed scale): 0.006931 (initial: 0.010614), change: -34.7%
+- ksteer (steering scale): 0.470702 (initial: 0.100000), change: 370.7%
+- ktheta (rotation scale): 4.908870 (initial: 1.0), change: 390.9%
+- steer_offset: -0.971701 rad = -55.67° (initial: 0.00°), change: -55.67°
+- axis_length: 1.377199 m (initial: 1.400 m), change: -1.6%
+
+Scale factor:
+- Scale X: 0.653005 (-34.70% change)
+- Scale Y: 4.707021 (370.70% change)
+- Scale Theta: 4.908870 (390.89% change)
+
+2D position of the sensor with respect to the base link:
+- x: -1.3651 m
+- y: -0.5043 m
+- theta: 0.9992 rad (57.25 degrees)
+
+Calibration validation:
+- Error improvement: 94.6%
+- Final chi-square: 4.210109e-02
+- Initial chi-square: 4.511067e-02
+- Chi-square reduction: 6.7%
+- L2 Norm error: mean 0.705170, min 0.001814, max 1.867830.
+
 The output results and images are in the folder: ``` ./output ```
 
 ## Analysis of the output
 Both calibration methods (numerical and analytical Jacobian) reach very similar results in terms of final error and overall improvement, as confirmed by the chi-square and L2 norm errors.
-
-## Subsampling
-When dealing with a large amount of noisy data, it is possible to reduce the noise by subsampling the dataset. Different subsampling rates were tested, but in every case, the performance was worse compared to using the full dataset. The following is an example using the best model from this study, with one sample kept every 20 data points:
-
-<p align="center">
-  <img src="./output/odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
-</p>
-<p align="center">
-  <em>Figure 12: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
-</p>
-
-<p align="center">
-  <img src="./output/chi_stat_simplified_model_analytical_jacobian.png" alt = "Chi-square" width = "400"/>
-</p>
-<p align="center">
-  <em>Figure 13: Chi-sqaure with subsample</em>
-</p>
-
-<p align="center">
-  <img src="./output/odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Odometry corrected vs. ground truth" width = "400"/>
-  <img src="./output/theta_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "Theta comparison" width = "400"/>
-</p>
-<p align="center">
-  <em>Figure 14: Calibrated odometry vs. ground truth (left) and calibrated orientation comparison (right)</em>
-</p>
-
-<p align="center">
-  <img src="./output/error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png" alt = "L2 norm error" width = "400"/>
-</p>
-<p align="center">
-  <em>Figure 15: L2 norm error with data subsample</em>
-</p>
 
 **Models** utilized:
 - Simplified model: models only the key components of the system, using fewer parameters. It is more computationally efficient.
@@ -534,23 +687,35 @@ When dealing with a large amount of noisy data, it is possible to reduce the noi
 | Simplified | 94.3%                  | 4.274564e-02    | 4.569650e-02     | 0.596068, 0.000605, 1.432876         |
 | Realistic  | 94.3%                  | 4.275811e-02    | 4.570565e-02     | 0.639362, 0.000965, 1.384192         |
 
+#### Subsampling
+**Calibration results:**
+| Model      | Mean Error Before (m) | Mean Error After (m) | Improvement (m) | Improvement (%) |
+|------------|-----------------------|----------------------|-----------------|-----------------|
+| Simplified | 15.6811               | 0.8652               | 14.8159         | 94.5%           |
+| Realistic  | 15.5487               | 0.8388               | 14.7099         | 94.6%           |
+
+**Validation results:**
+| Model      | Error Improvement % | Final chi-square  | Initial chi-square | L2 Norm Error (mean, min, max)   |
+|------------|--------------------|-------------------|-------------------|------------------------------------|
+| Simplified | 94.5%              | 4.213786e-02      | 4.510575e-02      | 0.761683, 0.001832, 1.910097       |
+| Realistic  | 94.6%              | 4.210109e-02      | 4.511067e-02      | 0.705170, 0.001814, 1.867830       |
+
 ### Analysis
-The analytical jacobian provides the best performance:
+The analytical Jacobian provides the best performance:
 - more stable convergence
 - more realistic and physically consistent parameter estimates
 - lower final errors and better calibration accuracy
 
-The simpified model performs comparably to the realisitc model, but:
+The simplified model performs comparably to the realisitc model, but:
 - is more computationally efficient
 - achieves nearly identical improvements in final error
 - is preferable when computational resources are limited
 
-The trajectory reconstruction using the simplified model shows excellent accuracy, with an L2 norm error of mean 0.079684, min 0.000000 and max 0.172628.
+The trajectory reconstruction using the simplified model, without subsampling, shows the best accuracy, with an L2 norm error of mean 0.079684, min 0.000000 and max 0.172628.
 
-The best result is obtained using the simplified model with the analytical Jacobian, which offers the best trade-off between accuracy, stability and computational efficiency.
-- mean final error 0.8269 m
-- error reductiuon 94.3%
-- estimated paramters: physically plausible and consistent
+The best calibration result is obtained using the realisitc model with the analytical Jacobian and subsampling. This offers the best trade-off between accuracy, stability and computational efficiency:
+- error reduction 94.6%
+- estimated parameters: physically plausible and consistent
 
 ## How run the code
 ```shell
@@ -568,7 +733,20 @@ to observe the robot and sensor trajectories in motion and apply a subsampling v
 ```shell
 octave main.m on subsample=value
 ```
+to set two subsample values with two ranges, run:
+```shell
+octave main.m range_subsample=value1,start1,end1,value2,start2,end2
+```
+to observe the robot and sensor trajectories in motion and apply a range_subsample, run:
+```shell
+octave main.m on range_subsample=value1,start1,end1,value2,start2,end2
+```
 
+###
+GNU Octave version:
+```shell 
+9.2.0
+```
 ### Project structure
 ```text
 .
@@ -578,32 +756,39 @@ octave main.m on subsample=value
 ├── LICENSE
 ├── main.m
 ├── output
+│   ├── chi_stat_realistic_model_analytical_jacobian_subsample.png
 │   ├── chi_stat_realistic_model_analytical_jacobian.png
 │   ├── chi_stat_realistic_model_numerical_jacobian.png
 │   ├── chi_stat_simplified_model_analytical_jacobian_subsample.png
 │   ├── chi_stat_simplified_model_analytical_jacobian.png
 │   ├── chi_stat_simplified_model_numerical_jacobian.png
+│   ├── error_odometry_calibrated_realistic_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_calibrated_realistic_model_analytical_jacobian.png
 │   ├── error_odometry_calibrated_realistic_model_numerical_jacobian.png
 │   ├── error_odometry_calibrated_simplified_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_calibrated_simplified_model_analytical_jacobian.png
 │   ├── error_odometry_calibrated_simplified_model_numerical_jacobian.png
+│   ├── error_odometry_estimated_realistic_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_estimated_realistic_model.png
 │   ├── error_odometry_estimated_simplified_model_analytical_jacobian_subsample.png
 │   ├── error_odometry_estimated_simplified_model.png
+│   ├── odometry_calibrated_realistic_model_analytical_jacobian_subsample.png
 │   ├── odometry_calibrated_realistic_model_analytical_jacobian.png
 │   ├── odometry_calibrated_realistic_model_numerical_jacobian.png
 │   ├── odometry_calibrated_simplified_model_analytical_jacobian_subsample.png
 │   ├── odometry_calibrated_simplified_model_analytical_jacobian.png
 │   ├── odometry_calibrated_simplified_model_numerical_jacobian.png
+│   ├── odometry_estimated_realistic_model_analytical_jacobian_subsample.png
 │   ├── odometry_estimated_realistic_model.png
 │   ├── odometry_estimated_simplified_model_analytical_jacobian_subsample.png
 │   ├── odometry_estimated_simplified_model.png
+│   ├── output_realistic_model_analytical_jacobian_subsample.txt
 │   ├── output_realistic_model_analytical_jacobian.txt
 │   ├── output_realistic_model_numerical_jacobian.txt
 │   ├── output_simplified_model_analytical_jacobian_subsample.txt
 │   ├── output_simplified_model_analytical_jacobian.txt
 │   ├── output_simplified_model_numerical_jacobian.txt
+│   ├── theta_calibrated_realistic_model_analytical_jacobian_subsample.png
 │   ├── theta_calibrated_realistic_model_analytical_jacobian.png
 │   ├── theta_calibrated_realistic_model_numerical_jacobian.png
 │   ├── theta_calibrated_simplified_model_analytical_jacobian_subsample.png

@@ -1,3 +1,4 @@
+
 function plot_odometry_trajectory(odometry_pose, model_pose, tracker_pose, moving, h, delta_time)
   hold on;
   grid on;

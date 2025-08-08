@@ -1,0 +1,75 @@
+Loading the dataset
+Dataset loaded
+L2 Norm error: mean 0.831549, min 0.000000, max 1.035354.
+Initial chi: 4.624784e-02
+Iter 1: chi = 4.51e-02, inliers = 88
+Iter 2: chi = 4.36e-02, inliers = 238
+Iter 3: chi = 4.31e-02, inliers = 375
+Iter 4: chi = 4.28e-02, inliers = 456
+Iter 5: chi = 4.26e-02, inliers = 487
+Iter 6: chi = 4.26e-02, inliers = 519
+Iter 7: chi = 4.25e-02, inliers = 527
+Iter 8: chi = 4.25e-02, inliers = 523
+Iter 9: chi = 4.25e-02, inliers = 523
+Iter 10: chi = 4.24e-02, inliers = 533
+Iter 11: chi = 4.23e-02, inliers = 536
+Iter 12: chi = 4.23e-02, inliers = 541
+Iter 13: chi = 4.23e-02, inliers = 538
+Iter 14: chi = 4.22e-02, inliers = 545
+Iter 15: chi = 4.22e-02, inliers = 552
+Iter 16: chi = 4.22e-02, inliers = 548
+Iter 17: chi = 4.22e-02, inliers = 559
+Iter 18: chi = 4.21e-02, inliers = 564
+Iter 19: chi = 4.21e-02, inliers = 564
+Iter 20: chi = 4.21e-02, inliers = 566
+Iter 21: chi = 4.21e-02, inliers = 568
+Iter 22: chi = 4.21e-02, inliers = 569
+Iter 23: chi = 4.21e-02, inliers = 569
+Iter 24: chi = 4.21e-02, inliers = 571
+Iter 25: step refused, c = 4.528481e-11
+Iter 25: chi = 4.21e-02, inliers = 570
+
+Calibration:
+Mean error before calibration: 15.5487 m
+Mean error after calibration: 0.8388 m
+Improvement: 14.7099 m (94.6%)
+Chi-square statistics:
+ Columns 1 through 7:
+
+   0.045111   0.043616   0.043079   0.042771   0.042643   0.042562   0.042492
+
+ Columns 8 through 14:
+
+   0.042473   0.042452   0.042393   0.042348   0.042313   0.042266   0.042228
+
+ Columns 15 through 21:
+
+   0.042194   0.042170   0.042155   0.042146   0.042136   0.042127   0.042119
+
+ Columns 22 through 25:
+
+   0.042115   0.042104   0.042101   0.042101
+
+Calibrated parameters
+ktraction (speed scale): 0.006931 (initial: 0.010614), change: -34.7%
+ksteer (steering scale): 0.470702 (initial: 0.100000), change: 370.7%
+ktheta (rotation scale): 4.908870 (initial: 1.0), change: 390.9%
+steer_offset: -0.971701 rad = -55.67° (initial: 0.00°), change: -55.67°
+axis_length: 1.377199 m (initial: 1.400 m), change: -1.6%
+Scale factor:
+Scale X: 0.653005 (-34.70% change)
+Scale Y: 4.707021 (370.70% change)
+Scale Theta: 4.908870 (390.89% change)
+
+Sensor position
+2D position of the sensor with respect to the base link:
+x: -1.3651 m
+y: -0.5043 m
+theta: 0.9992 rad (57.25 degrees)
+
+Calibration validation
+Error improvement: 94.6%
+Final chi-square: 4.210109e-02
+Initial chi-square: 4.511067e-02
+Chi-square reduction: 6.7%
+L2 Norm error: mean 0.705170, min 0.001814, max 1.867830.
